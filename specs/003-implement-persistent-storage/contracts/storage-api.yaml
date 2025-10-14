@@ -1,0 +1,526 @@
+# Storage API Contract
+# Feature: 003-implement-persistent-storage
+# Purpose: Define abstract storage interface for embedding persistence
+
+openapi: 3.0.3
+info:
+  title: Embedding Storage API
+  version: 1.0.0
+  description: |
+    Abstract storage interface for persisting embedding vectors and metadata.
+    Supports both SQLite (default) and PostgreSQL (optional) backends.
+
+components:
+  schemas:
+    EmbeddingRecord:
+      type: object
+      required:
+        - template_id
+        - embedding_vector
+        - category
+        - subcategory
+        - question_text
+        - answer_text
+        - content_hash
+      properties:
+        record_id:
+          type: integer
+          description: Auto-generated unique record identifier
+          readOnly: true
+        template_id:
+          type: string
+          description: Unique FAQ template identifier (e.g., "tmpl_001")
+          example: "tmpl_109"
+        version_id:
+          type: integer
+          description: Embedding version reference
+        embedding_vector:
+          type: array
+          items:
+            type: number
+            format: float
+          minItems: 1024
+          maxItems: 1024
+          description: 1024-dimensional embedding vector
+        category:
+          type: string
+          description: Main category
+          example: "Продукты - Вклады"
+        subcategory:
+          type: string
+          description: Subcategory
+          example: "Рублевые - Мои условия"
+        question_text:
+          type: string
+          description: Template question
+          example: "Как открыть вклад Мои условия?"
+        answer_text:
+          type: string
+          description: Template answer
+        content_hash:
+          type: string
+          pattern: "^[a-f0-9]{64}$"
+          description: SHA256 hash of question + answer (for change detection)
+        success_rate:
+          type: number
+          format: float
+          minimum: 0.0
+          maximum: 1.0
+          default: 0.5
+          description: Historical success rate
+        usage_count:
+          type: integer
+          minimum: 0
+          default: 0
+          description: Number of times template was used
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+
+    EmbeddingVersion:
+      type: object
+      required:
+        - model_name
+        - model_version
+        - embedding_dimension
+      properties:
+        version_id:
+          type: integer
+          readOnly: true
+        model_name:
+          type: string
+          description: Model identifier
+          example: "bge-m3"
+        model_version:
+          type: string
+          description: Model version string
+          example: "v1"
+        embedding_dimension:
+          type: integer
+          description: Vector dimensionality
+          example: 1024
+        is_current:
+          type: boolean
+          default: true
+          description: Whether this version is currently active
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+
+    StorageConfig:
+      type: object
+      required:
+        - backend
+      properties:
+        backend:
+          type: string
+          enum: [sqlite, postgres]
+          description: Storage backend type
+        sqlite_path:
+          type: string
+          description: Path to SQLite database file (for SQLite backend)
+          example: "/app/data/embeddings.db"
+        postgres_host:
+          type: string
+          description: PostgreSQL host (for PostgreSQL backend)
+          example: "localhost"
+        postgres_port:
+          type: integer
+          default: 5432
+        postgres_database:
+          type: string
+          example: "smart_support"
+        postgres_user:
+          type: string
+        postgres_password:
+          type: string
+          format: password
+        connection_pool_size:
+          type: integer
+          default: 5
+          description: Connection pool size (PostgreSQL only)
+
+    StorageError:
+      type: object
+      properties:
+        error_type:
+          type: string
+          enum:
+            - ConnectionError
+            - IntegrityError
+            - NotFoundError
+            - SerializationError
+            - ValidationError
+        message:
+          type: string
+        details:
+          type: object
+
+# Abstract Interface Definition (Python ABC-style)
+# Not standard OpenAPI, but documents the interface contract
+
+interface:
+  StorageBackend:
+    description: |
+      Abstract base class for storage backends.
+      All implementations must provide these methods.
+
+    methods:
+      connect:
+        description: Establish connection to storage backend
+        parameters: []
+        returns:
+          type: void
+        raises:
+          - ConnectionError: If connection fails
+
+      disconnect:
+        description: Close connection to storage backend
+        parameters: []
+        returns:
+          type: void
+
+      is_connected:
+        description: Check if storage backend is connected
+        parameters: []
+        returns:
+          type: boolean
+
+      initialize_schema:
+        description: Create tables and indexes if they don't exist
+        parameters: []
+        returns:
+          type: void
+        raises:
+          - ConnectionError: If not connected
+
+      get_or_create_version:
+        description: Get existing version or create new one
+        parameters:
+          - name: model_name
+            type: string
+            required: true
+          - name: model_version
+            type: string
+            required: true
+          - name: embedding_dimension
+            type: integer
+            required: true
+        returns:
+          type: integer
+          description: version_id
+        raises:
+          - IntegrityError: If version data is invalid
+
+      get_current_version:
+        description: Get currently active version
+        parameters: []
+        returns:
+          type: EmbeddingVersion
+          nullable: true
+        raises:
+          - ConnectionError: If not connected
+
+      set_current_version:
+        description: Mark a version as current (only one can be current)
+        parameters:
+          - name: version_id
+            type: integer
+            required: true
+        returns:
+          type: void
+        raises:
+          - NotFoundError: If version_id doesn't exist
+          - IntegrityError: If transaction fails
+
+      store_embedding:
+        description: Store single embedding record
+        parameters:
+          - name: record
+            type: EmbeddingRecord
+            required: true
+        returns:
+          type: integer
+          description: record_id of stored embedding
+        raises:
+          - IntegrityError: If template_id already exists or validation fails
+          - SerializationError: If embedding vector cannot be serialized
+
+      store_embeddings_batch:
+        description: Store multiple embeddings in a transaction
+        parameters:
+          - name: records
+            type: array[EmbeddingRecord]
+            required: true
+          - name: batch_size
+            type: integer
+            default: 100
+        returns:
+          type: array[integer]
+          description: List of record_ids
+        raises:
+          - IntegrityError: If any record fails validation
+          - SerializationError: If any vector cannot be serialized
+
+      load_embedding:
+        description: Load single embedding by template_id
+        parameters:
+          - name: template_id
+            type: string
+            required: true
+        returns:
+          type: EmbeddingRecord
+          nullable: true
+        raises:
+          - ConnectionError: If not connected
+
+      load_embeddings_all:
+        description: Load all embeddings for current version
+        parameters:
+          - name: version_id
+            type: integer
+            required: false
+            description: If not provided, uses current version
+        returns:
+          type: array[EmbeddingRecord]
+        raises:
+          - ConnectionError: If not connected
+
+      load_embeddings_by_category:
+        description: Load embeddings filtered by category/subcategory
+        parameters:
+          - name: category
+            type: string
+            required: true
+          - name: subcategory
+            type: string
+            required: false
+        returns:
+          type: array[EmbeddingRecord]
+        raises:
+          - ConnectionError: If not connected
+
+      update_embedding:
+        description: Update existing embedding record
+        parameters:
+          - name: template_id
+            type: string
+            required: true
+          - name: record
+            type: EmbeddingRecord
+            required: true
+        returns:
+          type: boolean
+          description: True if updated, False if not found
+        raises:
+          - IntegrityError: If validation fails
+          - SerializationError: If vector cannot be serialized
+
+      delete_embedding:
+        description: Delete embedding by template_id
+        parameters:
+          - name: template_id
+            type: string
+            required: true
+        returns:
+          type: boolean
+          description: True if deleted, False if not found
+        raises:
+          - ConnectionError: If not connected
+
+      exists:
+        description: Check if template_id exists in storage
+        parameters:
+          - name: template_id
+            type: string
+            required: true
+        returns:
+          type: boolean
+
+      count:
+        description: Get total number of embeddings
+        parameters:
+          - name: version_id
+            type: integer
+            required: false
+        returns:
+          type: integer
+
+      get_all_template_ids:
+        description: Get list of all template IDs in storage
+        parameters:
+          - name: version_id
+            type: integer
+            required: false
+        returns:
+          type: array[string]
+
+      get_content_hashes:
+        description: Get mapping of template_id to content_hash (for change detection)
+        parameters:
+          - name: version_id
+            type: integer
+            required: false
+        returns:
+          type: object
+          description: Dict[template_id, content_hash]
+
+      validate_integrity:
+        description: Check storage integrity (foreign keys, constraints, etc.)
+        parameters: []
+        returns:
+          type: object
+          properties:
+            is_valid:
+              type: boolean
+            errors:
+              type: array
+              items:
+                type: string
+
+      clear_all:
+        description: Delete all embeddings (for testing/migration)
+        parameters:
+          - name: version_id
+            type: integer
+            required: false
+        returns:
+          type: integer
+          description: Number of records deleted
+        raises:
+          - ConnectionError: If not connected
+
+# Exception Hierarchy
+
+exceptions:
+  StorageError:
+    description: Base exception for all storage errors
+    parent: Exception
+
+  ConnectionError:
+    description: Failed to connect or connection lost
+    parent: StorageError
+
+  IntegrityError:
+    description: Data integrity violation (unique constraint, foreign key, etc.)
+    parent: StorageError
+
+  NotFoundError:
+    description: Requested resource not found
+    parent: StorageError
+
+  SerializationError:
+    description: Failed to serialize/deserialize embedding vector
+    parent: StorageError
+
+  ValidationError:
+    description: Data validation failed
+    parent: StorageError
+
+# Usage Examples (Python)
+
+examples:
+  - name: Initialize SQLite Backend
+    language: python
+    code: |
+      from src.retrieval.storage import SQLiteBackend
+
+      # Create backend
+      backend = SQLiteBackend(db_path="data/embeddings.db")
+
+      # Connect and initialize schema
+      backend.connect()
+      backend.initialize_schema()
+
+      # Get or create version
+      version_id = backend.get_or_create_version(
+          model_name="bge-m3",
+          model_version="v1",
+          embedding_dimension=1024
+      )
+
+  - name: Store Embeddings
+    language: python
+    code: |
+      import numpy as np
+      from src.retrieval.storage.models import EmbeddingRecordCreate
+
+      # Create record
+      record = EmbeddingRecordCreate(
+          template_id="tmpl_109",
+          version_id=version_id,
+          embedding_vector=np.random.rand(1024).astype(np.float32),
+          category="Продукты - Вклады",
+          subcategory="Рублевые - Мои условия",
+          question_text="Как открыть вклад?",
+          answer_text="Посетите отделение банка.",
+          content_hash="a3f2b1..."
+      )
+
+      # Store
+      record_id = backend.store_embedding(record)
+
+  - name: Load Embeddings by Category
+    language: python
+    code: |
+      # Load all embeddings for category
+      records = backend.load_embeddings_by_category(
+          category="Продукты - Вклады",
+          subcategory="Рублевые - Мои условия"
+      )
+
+      # Convert to numpy arrays
+      embeddings = np.array([r.embedding_vector for r in records])
+      template_ids = [r.template_id for r in records]
+
+  - name: Detect Changes
+    language: python
+    code: |
+      import hashlib
+
+      # Get stored hashes
+      stored_hashes = backend.get_content_hashes()
+
+      # Compare with current FAQ
+      for template in faq_templates:
+          content = template['question'] + template['answer']
+          current_hash = hashlib.sha256(content.encode()).hexdigest()
+          stored_hash = stored_hashes.get(template['id'])
+
+          if stored_hash != current_hash:
+              # Content changed - recompute embedding
+              print(f"Template {template['id']} changed")
+
+  - name: Context Manager Usage
+    language: python
+    code: |
+      with SQLiteBackend(db_path="data/embeddings.db") as backend:
+          # Auto-connect on enter
+          backend.initialize_schema()
+
+          # Use backend
+          records = backend.load_embeddings_all()
+
+          # Auto-disconnect on exit
+
+# Configuration Example
+
+configuration_example:
+  sqlite:
+    backend: sqlite
+    sqlite_path: /app/data/embeddings.db
+
+  postgres:
+    backend: postgres
+    postgres_host: localhost
+    postgres_port: 5432
+    postgres_database: smart_support
+    postgres_user: postgres
+    postgres_password: secret
+    connection_pool_size: 5
