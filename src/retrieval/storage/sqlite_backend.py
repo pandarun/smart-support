@@ -128,8 +128,8 @@ class SQLiteBackend(StorageBackend):
             # Create parent directory if doesn't exist
             self.db_path.parent.mkdir(parents=True, exist_ok=True)
 
-            # Connect to database
-            self._conn = sqlite3.connect(str(self.db_path))
+            # Connect to database (check_same_thread=False allows use in different threads)
+            self._conn = sqlite3.connect(str(self.db_path), check_same_thread=False)
             self._conn.row_factory = sqlite3.Row  # Enable dict-like access
 
             # Enable foreign keys
@@ -658,18 +658,18 @@ class SQLiteBackend(StorageBackend):
 
             # Count total embeddings
             cursor = self._conn.execute("SELECT COUNT(*) as count FROM embedding_records")
-            total_embeddings = cursor.fetchone()['count']
+            total_records = cursor.fetchone()['count']
 
             return {
-                'is_valid': len(errors) == 0,
-                'total_embeddings': total_embeddings,
+                'valid': len(errors) == 0,
+                'total_records': total_records,
                 'errors': errors
             }
 
         except sqlite3.Error as e:
             return {
-                'is_valid': False,
-                'total_embeddings': 0,
+                'valid': False,
+                'total_records': 0,
                 'errors': [f"Validation failed: {e}"]
             }
 
@@ -685,16 +685,16 @@ class SQLiteBackend(StorageBackend):
             # Count total embeddings
             total_embeddings = self.count()
 
-            # Get database file size
-            storage_size_mb = 0.0
+            # Get database file size in bytes
+            database_size_bytes = 0
             if self.db_path.exists():
-                storage_size_mb = self.db_path.stat().st_size / (1024 * 1024)
+                database_size_bytes = self.db_path.stat().st_size
 
             return {
-                'backend_type': 'sqlite',
+                'backend': 'sqlite',
                 'total_embeddings': total_embeddings,
-                'storage_size_mb': storage_size_mb,
-                'model_version': f"{current_version.model_name} {current_version.model_version}" if current_version else "none",
+                'database_size_bytes': database_size_bytes,
+                'current_version': f"{current_version.model_name} {current_version.model_version}" if current_version else "none",
                 'embedding_dimension': current_version.embedding_dimension if current_version else 0,
                 'database_path': str(self.db_path)
             }
