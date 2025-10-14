@@ -152,7 +152,7 @@ class TestEmbeddingRecordCreate:
 
     def test_embedding_vector_validation_not_numpy(self):
         """Test validation rejects non-numpy array."""
-        with pytest.raises(ValidationError, match="numpy array"):
+        with pytest.raises(ValidationError, match="instance of ndarray"):
             EmbeddingRecordCreate(
                 template_id="tmpl_001",
                 version_id=1,

@@ -158,6 +158,7 @@ class TestAbstractMethodEnforcement:
             def get_content_hashes(self, version_id=None): return {}
             def validate_integrity(self): return {"valid": True}
             def get_storage_info(self): return {}
+            def clear_all(self, version_id=None): return 0
             def _begin_transaction(self): pass
             def _commit_transaction(self): pass
             def _rollback_transaction(self): pass
@@ -213,6 +214,7 @@ class TestContextManagerProtocol:
             def get_content_hashes(self, version_id=None): return {}
             def validate_integrity(self): return {"valid": True}
             def get_storage_info(self): return {}
+            def clear_all(self, version_id=None): return 0
             def _begin_transaction(self): pass
             def _commit_transaction(self): pass
             def _rollback_transaction(self): pass
@@ -255,6 +257,7 @@ class TestContextManagerProtocol:
             def get_content_hashes(self, version_id=None): return {}
             def validate_integrity(self): return {"valid": True}
             def get_storage_info(self): return {}
+            def clear_all(self, version_id=None): return 0
             def _begin_transaction(self): pass
             def _commit_transaction(self): pass
             def _rollback_transaction(self): pass
@@ -315,6 +318,7 @@ class TestTransactionContextManager:
             def get_content_hashes(self, version_id=None): return {}
             def validate_integrity(self): return {"valid": True}
             def get_storage_info(self): return {}
+            def clear_all(self, version_id=None): return 0
 
         backend = TestBackend()
 
@@ -358,6 +362,7 @@ class TestTransactionContextManager:
             def get_content_hashes(self, version_id=None): return {}
             def validate_integrity(self): return {"valid": True}
             def get_storage_info(self): return {}
+            def clear_all(self, version_id=None): return 0
 
         backend = TestBackend()
 
