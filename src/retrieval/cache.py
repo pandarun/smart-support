@@ -2,14 +2,18 @@
 In-memory embedding cache for Template Retrieval Module.
 
 Provides fast storage and retrieval of precomputed template embeddings
-with category-based filtering and normalization.
+with category-based filtering and normalization. Supports optional
+persistent storage backend for fast startup.
 """
 
 import logging
-from typing import Dict, List, Tuple, Optional
+from typing import Dict, List, Tuple, Optional, TYPE_CHECKING
 from dataclasses import dataclass
 
 import numpy as np
+
+if TYPE_CHECKING:
+    from src.retrieval.storage.base import StorageBackend
 
 logger = logging.getLogger(__name__)
 
@@ -65,8 +69,27 @@ class EmbeddingCache:
         {'total_templates': 1, 'categories': 1, 'precompute_time_seconds': None}
     """
 
-    def __init__(self):
-        """Initialize empty cache."""
+    def __init__(self, storage_backend: Optional["StorageBackend"] = None):
+        """
+        Initialize cache, optionally loading from persistent storage.
+
+        Args:
+            storage_backend: Optional storage backend to load embeddings from.
+                            If provided and connected, embeddings will be loaded
+                            on initialization for fast startup.
+
+        Example:
+            >>> # In-memory only (original behavior)
+            >>> cache = EmbeddingCache()
+
+            >>> # With persistent storage (fast startup)
+            >>> from src.retrieval.storage import create_storage_backend, StorageConfig
+            >>> config = StorageConfig.from_env()
+            >>> storage = create_storage_backend(config)
+            >>> storage.connect()
+            >>> storage.initialize_schema()
+            >>> cache = EmbeddingCache(storage_backend=storage)
+        """
         # Primary storage: template_id -> normalized embedding vector
         self.embeddings: Dict[str, np.ndarray] = {}
 
@@ -76,7 +99,26 @@ class EmbeddingCache:
         # Performance tracking
         self.precompute_time: Optional[float] = None
 
-        logger.info("Initialized empty EmbeddingCache")
+        # Storage backend reference
+        self.storage_backend = storage_backend
+
+        # Load from storage if available
+        if storage_backend is not None and storage_backend.is_connected():
+            try:
+                self._load_from_storage()
+            except Exception as e:
+                logger.warning(
+                    f"Failed to load embeddings from storage: {e}. "
+                    "Falling back to empty cache (will precompute on demand)"
+                )
+
+        if len(self.embeddings) == 0:
+            logger.info("Initialized empty EmbeddingCache")
+        else:
+            logger.info(
+                f"Initialized EmbeddingCache with {len(self.embeddings)} embeddings "
+                f"loaded from storage"
+            )
 
     def add(
         self,
@@ -330,6 +372,51 @@ class EmbeddingCache:
         self.metadata.clear()
         self.precompute_time = None
         logger.info("Cache cleared")
+
+    def _load_from_storage(self) -> None:
+        """
+        Load embeddings from persistent storage (internal method).
+
+        Called during initialization if storage_backend is provided.
+        Loads all embeddings for current version and populates in-memory cache.
+
+        Raises:
+            Exception: If storage load fails (caller handles gracefully)
+        """
+        if self.storage_backend is None:
+            return
+
+        logger.info("Loading embeddings from persistent storage...")
+        import time
+        start_time = time.time()
+
+        # Load all embedding records from storage
+        records = self.storage_backend.load_embeddings_all()
+
+        if not records:
+            logger.warning("No embeddings found in storage")
+            return
+
+        # Populate cache with loaded embeddings
+        for record in records:
+            # Create metadata from storage record
+            metadata = TemplateMetadata(
+                template_id=record.template_id,
+                category=record.category,
+                subcategory=record.subcategory,
+                question=record.question_text,
+                answer=record.answer_text,
+                success_rate=record.success_rate,
+                usage_count=record.usage_count
+            )
+
+            # Add to cache (handles normalization)
+            self.add(record.template_id, record.embedding_vector, metadata)
+
+        elapsed = time.time() - start_time
+        logger.info(
+            f"Loaded {len(records)} embeddings from storage in {elapsed:.2f}s"
+        )
 
     def __len__(self) -> int:
         """
