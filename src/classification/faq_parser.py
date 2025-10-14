@@ -178,25 +178,100 @@ _faq_parser_instance: FAQParser = None
 def get_faq_parser(faq_path: str = None) -> FAQParser:
     """
     Get cached FAQ parser instance.
-    
+
     Args:
         faq_path: Path to FAQ file (optional, uses environment variable if not provided)
-        
+
     Returns:
         Cached FAQParser instance
-        
+
     Raises:
         ValueError: If FAQ path not provided and FAQ_PATH env var not set
     """
     global _faq_parser_instance
-    
+
     if _faq_parser_instance is None:
         if faq_path is None:
             faq_path = os.getenv("FAQ_PATH", "docs/smart_support_vtb_belarus_faq_final.xlsx")
-        
+
         if not faq_path:
             raise ValueError("FAQ path not provided and FAQ_PATH environment variable not set")
-        
+
         _faq_parser_instance = FAQParser(faq_path)
-    
+
     return _faq_parser_instance
+
+
+def parse_faq(faq_path: str) -> List[Dict[str, str]]:
+    """
+    Parse FAQ Excel file and extract all templates.
+
+    Reads the FAQ database and returns a list of templates with their
+    categories, subcategories, questions, and answers.
+
+    Args:
+        faq_path: Path to FAQ Excel file
+
+    Returns:
+        List of template dictionaries with keys:
+        - id: Unique template identifier (e.g., "tmpl_001")
+        - category: Main category name
+        - subcategory: Subcategory name
+        - question: Example question text
+        - answer: Template answer text
+
+    Raises:
+        FileNotFoundError: If FAQ file doesn't exist
+        ValueError: If FAQ file format is invalid or empty
+
+    Example:
+        >>> templates = parse_faq("docs/faq.xlsx")
+        >>> len(templates)
+        187
+        >>> templates[0]['category']
+        'Счета и вклады'
+    """
+    import pandas as pd
+
+    # Check if file exists
+    faq_file = Path(faq_path)
+    if not faq_file.exists():
+        raise FileNotFoundError(f"FAQ file not found: {faq_path}")
+
+    try:
+        # Read Excel file
+        df = pd.read_excel(faq_path)
+
+        # Verify required columns exist
+        required_columns = ['Основная категория', 'Подкатегория', 'Пример вопроса', 'Шаблонный ответ']
+        missing_columns = [col for col in required_columns if col not in df.columns]
+        if missing_columns:
+            raise ValueError(f"FAQ file missing required columns: {missing_columns}")
+
+        # Extract templates
+        templates = []
+        for idx, row in df.iterrows():
+            # Skip rows with missing data
+            if pd.isna(row['Основная категория']) or pd.isna(row['Подкатегория']):
+                continue
+            if pd.isna(row['Пример вопроса']) or pd.isna(row['Шаблонный ответ']):
+                continue
+
+            template = {
+                'id': f"tmpl_{idx:03d}",
+                'category': str(row['Основная категория']).strip(),
+                'subcategory': str(row['Подкатегория']).strip(),
+                'question': str(row['Пример вопроса']).strip(),
+                'answer': str(row['Шаблонный ответ']).strip()
+            }
+            templates.append(template)
+
+        if not templates:
+            raise ValueError(f"No valid templates found in FAQ file: {faq_path}")
+
+        return templates
+
+    except Exception as e:
+        if isinstance(e, (FileNotFoundError, ValueError)):
+            raise
+        raise ValueError(f"Failed to parse FAQ file: {e}") from e

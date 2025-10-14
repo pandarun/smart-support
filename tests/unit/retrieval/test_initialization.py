@@ -23,13 +23,15 @@ class TestInitializeRetrieval:
     """Tests for initialize_retrieval function."""
 
     @pytest.mark.asyncio
+    @patch('os.path.exists')
     @patch('src.retrieval.EmbeddingsClient')
     @patch('src.retrieval.precompute_embeddings')
-    async def test_initialize_success(self, mock_precompute, mock_client_class, monkeypatch):
+    async def test_initialize_success(self, mock_precompute, mock_client_class, mock_exists, monkeypatch):
         """Test successful initialization."""
         # Arrange
         monkeypatch.setenv("FAQ_PATH", "test.xlsx")
         monkeypatch.setenv("SCIBOX_API_KEY", "test_key")
+        mock_exists.return_value = True  # Mock file exists
 
         # Create mock cache
         mock_cache = Mock(spec=EmbeddingCache)
@@ -87,12 +89,14 @@ class TestInitializeRetrieval:
             await initialize_retrieval()
 
     @pytest.mark.asyncio
+    @patch('os.path.exists')
     @patch('src.retrieval.EmbeddingsClient')
-    async def test_initialize_missing_api_key_raises_error(self, mock_client_class, monkeypatch):
+    async def test_initialize_missing_api_key_raises_error(self, mock_client_class, mock_exists, monkeypatch):
         """Test that missing API key raises ValueError."""
         # Arrange
         monkeypatch.setenv("FAQ_PATH", "test.xlsx")
         monkeypatch.delenv("SCIBOX_API_KEY", raising=False)
+        mock_exists.return_value = True  # Mock file exists
 
         # Mock client initialization to raise ValueError
         mock_client_class.side_effect = ValueError("SCIBOX_API_KEY must be provided")
@@ -102,18 +106,21 @@ class TestInitializeRetrieval:
             await initialize_retrieval()
 
     @pytest.mark.asyncio
+    @patch('os.path.exists')
     @patch('src.retrieval.EmbeddingsClient')
     @patch('src.retrieval.precompute_embeddings')
     async def test_initialize_precompute_failure_raises_error(
         self,
         mock_precompute,
         mock_client_class,
+        mock_exists,
         monkeypatch
     ):
         """Test that precomputation failure raises error."""
         # Arrange
         monkeypatch.setenv("FAQ_PATH", "test.xlsx")
         monkeypatch.setenv("SCIBOX_API_KEY", "test_key")
+        mock_exists.return_value = True  # Mock file exists
 
         mock_client = Mock()
         mock_client_class.return_value = mock_client
@@ -126,11 +133,13 @@ class TestInitializeRetrieval:
             await initialize_retrieval()
 
     @pytest.mark.asyncio
+    @patch('os.path.exists')
     @patch('src.retrieval.EmbeddingsClient')
     @patch('src.retrieval.precompute_embeddings')
-    async def test_initialize_custom_parameters(self, mock_precompute, mock_client_class):
+    async def test_initialize_custom_parameters(self, mock_precompute, mock_client_class, mock_exists):
         """Test initialization with custom parameters."""
         # Arrange
+        mock_exists.return_value = True  # Mock file exists
         mock_cache = Mock(spec=EmbeddingCache)
         mock_cache.is_ready = True
         mock_cache.precompute_time = 10.0
@@ -169,23 +178,32 @@ class TestInitializeRetrieval:
         assert call_kwargs["batch_size"] == 30
 
     @pytest.mark.asyncio
+    @patch('os.path.exists')
     @patch('src.retrieval.EmbeddingsClient')
     @patch('src.retrieval.precompute_embeddings')
     async def test_initialize_cache_not_ready_raises_error(
         self,
         mock_precompute,
         mock_client_class,
+        mock_exists,
         monkeypatch
     ):
         """Test that cache not ready raises RuntimeError."""
         # Arrange
         monkeypatch.setenv("FAQ_PATH", "test.xlsx")
         monkeypatch.setenv("SCIBOX_API_KEY", "test_key")
+        mock_exists.return_value = True  # Mock file exists
 
         # Create cache that's not ready
         mock_cache = Mock(spec=EmbeddingCache)
         mock_cache.is_ready = False  # Not ready!
-        mock_cache.stats = {"total_templates": 0}
+        mock_cache.stats = {
+            "total_templates": 0,
+            "categories": 0,
+            "subcategories": 0,
+            "memory_estimate_mb": 0.0,
+            "precompute_time_seconds": 0.0
+        }
         mock_precompute.return_value = mock_cache
 
         mock_client = Mock()
