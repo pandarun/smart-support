@@ -121,7 +121,7 @@ class TestTemplateRetriever:
         # Arrange
         retriever = TemplateRetriever(mock_embeddings_client, mock_cache_empty)
         request = RetrievalRequest(
-            query="Тест",
+            query="Тестовый запрос",
             category="Несуществующая категория",
             subcategory="Несуществующая подкатегория",
             top_k=5
@@ -143,7 +143,7 @@ class TestTemplateRetriever:
 
         # Test top_k=2 (should return 2 results even though 3 available)
         request = RetrievalRequest(
-            query="Тест",
+            query="Тестовый запрос",
             category="Счета и вклады",
             subcategory="Открытие счета",
             top_k=2
@@ -185,7 +185,7 @@ class TestTemplateRetriever:
         # Arrange
         retriever = TemplateRetriever(mock_embeddings_client, mock_cache_with_templates)
         request = RetrievalRequest(
-            query="Тест",
+            query="Тестовый запрос",
             category="Счета и вклады",
             subcategory="Открытие счета",
             top_k=5
@@ -243,7 +243,7 @@ class TestTemplateRetriever:
         # Arrange
         retriever = TemplateRetriever(mock_embeddings_client, mock_cache_with_templates)
         request = RetrievalRequest(
-            query="Тест",
+            query="Тестовый запрос",
             category="Счета и вклады",
             subcategory="Открытие счета",
             top_k=5
