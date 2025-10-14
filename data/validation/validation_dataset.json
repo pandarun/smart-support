@@ -1,0 +1,62 @@
+[
+  {
+    "inquiry": "Как открыть расчетный счет в ВТБ?",
+    "expected_category": "Новые клиенты",
+    "expected_subcategory": "Регистрация и онбординг",
+    "note": "Account opening inquiry - new customer"
+  },
+  {
+    "inquiry": "Какие документы нужны для регистрации?",
+    "expected_category": "Новые клиенты",
+    "expected_subcategory": "Регистрация и онбординг",
+    "note": "Registration requirements"
+  },
+  {
+    "inquiry": "Какая процентная ставка по вкладу в долларах США?",
+    "expected_category": "Продукты - Вклады",
+    "expected_subcategory": "Валютные - USD",
+    "note": "USD deposit inquiry"
+  },
+  {
+    "inquiry": "Условия по вкладу в евро",
+    "expected_category": "Продукты - Вклады",
+    "expected_subcategory": "Валютные - EUR",
+    "note": "EUR deposit inquiry"
+  },
+  {
+    "inquiry": "Как получить дебетовую карту MORE?",
+    "expected_category": "Продукты - Карты",
+    "expected_subcategory": "Дебетовые карты - MORE",
+    "note": "MORE debit card inquiry"
+  },
+  {
+    "inquiry": "Условия по кредитной карте Портмоне 2.0",
+    "expected_category": "Продукты - Карты",
+    "expected_subcategory": "Кредитные карты - Портмоне 2.0",
+    "note": "Portmone credit card inquiry"
+  },
+  {
+    "inquiry": "Какая процентная ставка по автокредиту?",
+    "expected_category": "Продукты - Кредиты",
+    "expected_subcategory": "Автокредиты - Автокредит без залога",
+    "note": "Auto loan inquiry"
+  },
+  {
+    "inquiry": "Условия потребительского кредита На всё про всё",
+    "expected_category": "Продукты - Кредиты",
+    "expected_subcategory": "Потребительские - На всё про всё",
+    "note": "Consumer loan inquiry"
+  },
+  {
+    "inquiry": "Забыл пароль от мобильного приложения, как восстановить?",
+    "expected_category": "Техническая поддержка",
+    "expected_subcategory": "Проблемы и решения",
+    "note": "Technical support - password reset"
+  },
+  {
+    "inquiry": "Как настроить онлайн-банкинг?",
+    "expected_category": "Частные клиенты",
+    "expected_subcategory": "Онлайн-сервисы",
+    "note": "Online banking setup"
+  }
+]

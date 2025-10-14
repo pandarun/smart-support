@@ -1,0 +1,44 @@
+{
+  "total_inquiries": 10,
+  "correct_classifications": 9,
+  "accuracy_percentage": 90.0,
+  "per_category_accuracy": {
+    "Новые клиенты": {
+      "total": 2,
+      "correct": 2,
+      "accuracy": 100.0
+    },
+    "Продукты - Вклады": {
+      "total": 2,
+      "correct": 2,
+      "accuracy": 100.0
+    },
+    "Продукты - Карты": {
+      "total": 2,
+      "correct": 1,
+      "accuracy": 50.0
+    },
+    "Продукты - Кредиты": {
+      "total": 2,
+      "correct": 2,
+      "accuracy": 100.0
+    },
+    "Техническая поддержка": {
+      "total": 1,
+      "correct": 1,
+      "accuracy": 100.0
+    },
+    "Частные клиенты": {
+      "total": 1,
+      "correct": 1,
+      "accuracy": 100.0
+    }
+  },
+  "processing_time_stats": {
+    "min_ms": 2103,
+    "max_ms": 10537,
+    "mean_ms": 4758,
+    "p95_ms": 10537
+  },
+  "timestamp": "2025-10-14T16:37:50.639921Z"
+}

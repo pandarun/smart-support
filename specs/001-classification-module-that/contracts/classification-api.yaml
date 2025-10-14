@@ -1,0 +1,449 @@
+openapi: 3.0.3
+info:
+  title: Classification Module API
+  description: |
+    Classification Module API for Smart Support system.
+    Analyzes Russian customer banking inquiries and determines product category and subcategory
+    using Scibox Qwen2.5-72B-Instruct-AWQ LLM.
+
+    **Performance Requirements**:
+    - Single inquiry: <2 seconds (95th percentile)
+    - Batch processing: <2 seconds per inquiry average
+
+    **Quality Requirements**:
+    - Accuracy: ≥70% on validation dataset
+    - Deterministic results (same inquiry → same output)
+  version: 1.0.0
+  contact:
+    name: Smart Support Team
+    email: support@smart-support.example.com
+
+servers:
+  - url: http://localhost:8000/api
+    description: Local development server
+  - url: http://localhost:8000/api
+    description: Docker container deployment
+
+tags:
+  - name: classification
+    description: Classification operations
+  - name: validation
+    description: Validation and testing operations
+
+paths:
+  /classify:
+    post:
+      summary: Classify single inquiry
+      description: |
+        Classifies a single Russian customer inquiry into category and subcategory.
+        Returns result within 2 seconds with confidence score.
+
+        **User Story**: P1 - Single Inquiry Classification
+      operationId: classify_inquiry
+      tags:
+        - classification
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClassificationRequest'
+            examples:
+              account_opening:
+                summary: Account opening inquiry
+                value:
+                  text: "Как открыть счет в ВТБ?"
+              card_inquiry:
+                summary: Credit card inquiry
+                value:
+                  text: "Какие условия по кредитной карте Портмоне 2.0?"
+              technical_support:
+                summary: Technical support question
+                value:
+                  text: "Забыл пароль от мобильного приложения"
+      responses:
+        '200':
+          description: Successfully classified inquiry
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClassificationResult'
+              examples:
+                success:
+                  summary: Successful classification
+                  value:
+                    inquiry: "Как открыть счет в ВТБ?"
+                    category: "Новые клиенты"
+                    subcategory: "Регистрация и онбординг"
+                    confidence: 0.92
+                    processing_time_ms: 1247
+                    timestamp: "2025-10-14T10:30:45Z"
+        '400':
+          description: Invalid request (validation failed)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClassificationError'
+              examples:
+                empty_text:
+                  summary: Empty inquiry text
+                  value:
+                    error: "Inquiry text must be at least 5 characters"
+                    error_type: "validation"
+                no_cyrillic:
+                  summary: No Cyrillic characters
+                  value:
+                    error: "Inquiry must contain at least one Cyrillic character"
+                    error_type: "validation"
+        '500':
+          description: Internal server error (API failure, timeout)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClassificationError'
+              examples:
+                api_unavailable:
+                  summary: Scibox API unavailable
+                  value:
+                    error: "Classification service unavailable. Please retry."
+                    error_type: "api_error"
+                    details: "Connection timeout to Scibox API"
+        '504':
+          description: Gateway timeout (exceeded 2 second limit)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClassificationError'
+              examples:
+                timeout:
+                  summary: Classification timeout
+                  value:
+                    error: "Classification timed out. Please retry."
+                    error_type: "timeout"
+
+  /classify/batch:
+    post:
+      summary: Classify multiple inquiries
+      description: |
+        Classifies multiple inquiries in batch mode.
+        Processes inquiries in parallel, returns results in same order as input.
+
+        **User Story**: P3 - Batch Classification Processing
+      operationId: classify_batch
+      tags:
+        - classification
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BatchClassificationRequest'
+            examples:
+              batch_example:
+                summary: Batch of 3 inquiries
+                value:
+                  inquiries:
+                    - "Как открыть счет?"
+                    - "Какая процентная ставка по кредиту?"
+                    - "Забыл пароль от мобильного приложения"
+      responses:
+        '200':
+          description: Successfully classified all inquiries
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BatchClassificationResult'
+        '400':
+          description: Invalid request (validation failed)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClassificationError'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClassificationError'
+
+  /validate:
+    post:
+      summary: Run validation dataset
+      description: |
+        Processes validation dataset and returns accuracy metrics.
+        Compares predicted categories/subcategories against ground truth.
+
+        **User Story**: P2 - Validation Dataset Testing
+      operationId: run_validation
+      tags:
+        - validation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                dataset_path:
+                  type: string
+                  description: Path to validation dataset JSON file
+                  example: "data/validation/validation_dataset.json"
+      responses:
+        '200':
+          description: Validation completed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationResult'
+        '400':
+          description: Invalid dataset format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClassificationError'
+        '404':
+          description: Dataset file not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClassificationError'
+
+  /health:
+    get:
+      summary: Health check
+      description: Returns API health status and Scibox API connectivity
+      operationId: health_check
+      tags:
+        - classification
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "healthy"
+                  scibox_api_status:
+                    type: string
+                    example: "connected"
+                  faq_categories_loaded:
+                    type: integer
+                    example: 6
+        '503':
+          description: Service unhealthy (Scibox API unreachable)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "unhealthy"
+                  scibox_api_status:
+                    type: string
+                    example: "unreachable"
+
+components:
+  schemas:
+    ClassificationRequest:
+      type: object
+      required:
+        - text
+      properties:
+        text:
+          type: string
+          minLength: 5
+          maxLength: 5000
+          description: Customer inquiry text in Russian
+          example: "Как открыть счет в ВТБ?"
+
+    ClassificationResult:
+      type: object
+      required:
+        - inquiry
+        - category
+        - subcategory
+        - confidence
+        - processing_time_ms
+        - timestamp
+      properties:
+        inquiry:
+          type: string
+          description: Original inquiry text
+          example: "Как открыть счет в ВТБ?"
+        category:
+          type: string
+          description: Predicted top-level category
+          enum:
+            - "Новые клиенты"
+            - "Продукты - Вклады"
+            - "Продукты - Карты"
+            - "Продукты - Кредиты"
+            - "Техническая поддержка"
+            - "Частные клиенты"
+          example: "Новые клиенты"
+        subcategory:
+          type: string
+          description: Predicted subcategory
+          example: "Регистрация и онбординг"
+        confidence:
+          type: number
+          format: float
+          minimum: 0.0
+          maximum: 1.0
+          description: Confidence score (0.0 to 1.0)
+          example: 0.92
+        processing_time_ms:
+          type: integer
+          minimum: 1
+          description: Processing time in milliseconds
+          example: 1247
+        timestamp:
+          type: string
+          format: date-time
+          description: When classification was performed (ISO 8601)
+          example: "2025-10-14T10:30:45Z"
+
+    BatchClassificationRequest:
+      type: object
+      required:
+        - inquiries
+      properties:
+        inquiries:
+          type: array
+          minItems: 1
+          maxItems: 100
+          items:
+            type: string
+            minLength: 5
+            maxLength: 5000
+          description: List of inquiry texts to classify
+          example:
+            - "Как открыть счет?"
+            - "Какая процентная ставка по кредиту?"
+
+    BatchClassificationResult:
+      type: object
+      required:
+        - results
+        - total_processing_time_ms
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ClassificationResult'
+          description: Classification results in same order as input
+        total_processing_time_ms:
+          type: integer
+          description: Total time to process all inquiries
+          example: 5432
+
+    ValidationResult:
+      type: object
+      required:
+        - total_inquiries
+        - correct_classifications
+        - accuracy_percentage
+        - per_category_accuracy
+        - processing_time_stats
+        - timestamp
+      properties:
+        total_inquiries:
+          type: integer
+          description: Total test cases processed
+          example: 10
+        correct_classifications:
+          type: integer
+          description: Number of correct predictions
+          example: 8
+        accuracy_percentage:
+          type: number
+          format: float
+          minimum: 0.0
+          maximum: 100.0
+          description: Overall accuracy percentage
+          example: 80.0
+        per_category_accuracy:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/CategoryAccuracy'
+          description: Accuracy breakdown by category
+        processing_time_stats:
+          $ref: '#/components/schemas/ProcessingTimeStats'
+        timestamp:
+          type: string
+          format: date-time
+          example: "2025-10-14T10:35:12Z"
+
+    CategoryAccuracy:
+      type: object
+      required:
+        - total
+        - correct
+        - accuracy
+      properties:
+        total:
+          type: integer
+          description: Total inquiries in this category
+          example: 3
+        correct:
+          type: integer
+          description: Correctly classified inquiries
+          example: 3
+        accuracy:
+          type: number
+          format: float
+          description: Category-specific accuracy percentage
+          example: 100.0
+
+    ProcessingTimeStats:
+      type: object
+      required:
+        - min_ms
+        - max_ms
+        - mean_ms
+        - p95_ms
+      properties:
+        min_ms:
+          type: integer
+          description: Minimum processing time
+          example: 892
+        max_ms:
+          type: integer
+          description: Maximum processing time
+          example: 1654
+        mean_ms:
+          type: integer
+          description: Mean processing time
+          example: 1203
+        p95_ms:
+          type: integer
+          description: 95th percentile processing time
+          example: 1587
+
+    ClassificationError:
+      type: object
+      required:
+        - error
+        - error_type
+      properties:
+        error:
+          type: string
+          description: Human-readable error message
+          example: "Classification service unavailable. Please retry."
+        error_type:
+          type: string
+          enum:
+            - validation
+            - api_error
+            - timeout
+            - unknown
+          description: Error category
+          example: "api_error"
+        details:
+          type: string
+          description: Additional error details
+          example: "Connection timeout to Scibox API"

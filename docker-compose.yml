@@ -1,0 +1,70 @@
+version: '3.8'
+
+services:
+  classification:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: smart-support-classification:latest
+    container_name: smart-support-classification
+    
+    # Environment variables
+    environment:
+      - SCIBOX_API_KEY=${SCIBOX_API_KEY}
+      - FAQ_PATH=/app/docs/smart_support_vtb_belarus_faq_final.xlsx
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - API_TIMEOUT=${API_TIMEOUT:-1.8}
+    
+    # Mount .env file
+    env_file:
+      - .env
+    
+    # Volume mounts for development
+    volumes:
+      - ./data/validation:/app/data/validation:ro
+      - ./data/results:/app/data/results:rw
+      - ./docs:/app/docs:ro
+    
+    # Network
+    networks:
+      - smart-support-network
+    
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+    
+    # Restart policy
+    restart: unless-stopped
+    
+    # Health check
+    healthcheck:
+      test: ["CMD", "python", "-c", "from src.classification.faq_parser import get_faq_parser; get_faq_parser()"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    
+    # Default command (can override)
+    # Example: docker-compose run classification "Как открыть счет?"
+    command: ["--help"]
+
+  # Optional: Add future services here
+  # ranking:
+  #   ...
+  # operator-ui:
+  #   ...
+
+networks:
+  smart-support-network:
+    driver: bridge
+
+# Volumes for persistent data
+volumes:
+  validation-data:
+  results-data:
