@@ -5,7 +5,7 @@
 
 ## 0. Swagger и базовые URL
 
-- Swagger: по домену `https://llm.t1v.scibox.tech/` или по IP `http://45.145.191.148:4000`.
+- Swagger: по домену `https://llm.t1v.scibox.tech/` или по IP `http://45.145.191.148:4000/`.
 - Endpoint списка моделей (пример по IP): `http://45.145.191.148:4000/v1/models`.
 
 Вы можете использовать либо домен без порта, либо IP с портом 4000. В командах ниже оставлен IP с портом, но доменное имя также будет работать без указания порта.
@@ -184,8 +184,10 @@ with client.chat.completions.stream(
     max_tokens=400,
 ) as stream:
     for event in stream:
-        if event.type == "message.delta" and event.delta.get("content"):
-            print(event.delta["content"], end="", flush=True)
+        if event.type == "chunk":
+            delta = getattr(event.chunk.choices[0].delta, "content", None)
+            if delta:
+                print(delta, end="", flush=True)
         elif event.type == "message.completed":
             print()  # newline
 ```
