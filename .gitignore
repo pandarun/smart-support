@@ -76,6 +76,11 @@ logs/
 *.sqlite
 *.sqlite3
 
+# SQLite temporary files (keep these out of repo)
+*.db-shm
+*.db-wal
+*.db-journal
+
 # Docker
 docker-compose.override.yml
 .dockerignore
