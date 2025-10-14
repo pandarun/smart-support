@@ -180,6 +180,11 @@ echo -e "${CYAN}ℹ Batch size: $BATCH_SIZE templates/batch${NC}"
 # Step 4: Run migration
 echo -e "\n${BLUE}${BOLD}[4/5] Running database migration...${NC}"
 
+# Load environment variables from .env file
+if [ -f .env ]; then
+    export $(grep -v '^#' .env | grep -v '^$' | xargs)
+fi
+
 # Build migration command
 MIGRATION_CMD="python -m src.cli.migrate_embeddings"
 MIGRATION_CMD="$MIGRATION_CMD --faq-path $FAQ_PATH"
