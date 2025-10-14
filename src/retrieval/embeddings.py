@@ -230,13 +230,15 @@ class EmbeddingsClient:
 async def precompute_embeddings(
     faq_path: str,
     embeddings_client: EmbeddingsClient,
-    batch_size: int = 20
+    batch_size: int = 20,
+    storage_backend: Optional["StorageBackend"] = None
 ) -> EmbeddingCache:
     """
     Precompute embeddings for all FAQ templates (async for parallel batching).
 
     Loads templates from FAQ database, batches them for efficient API calls,
-    embeds each batch, and stores normalized embeddings in cache.
+    embeds each batch, and stores normalized embeddings in cache. Optionally
+    persists embeddings to storage backend for fast startup on future runs.
 
     Performance requirement: <60 seconds for 200 templates (PR-002)
 
@@ -244,6 +246,8 @@ async def precompute_embeddings(
         faq_path: Path to FAQ Excel database
         embeddings_client: Initialized EmbeddingsClient instance
         batch_size: Number of templates per API batch (recommended: 20-50)
+        storage_backend: Optional storage backend to persist embeddings.
+                        If provided, embeddings will be stored for fast startup.
 
     Returns:
         EmbeddingCache with precomputed normalized embeddings
@@ -256,6 +260,7 @@ async def precompute_embeddings(
     Example:
         >>> import asyncio
         >>> client = EmbeddingsClient()
+        >>> # Without persistence (original behavior)
         >>> cache = asyncio.run(precompute_embeddings(
         ...     "docs/smart_support_vtb_belarus_faq_final.xlsx",
         ...     client,
@@ -263,9 +268,26 @@ async def precompute_embeddings(
         ... ))
         >>> cache.stats
         {'total_templates': 187, 'categories': 6, 'precompute_time_seconds': 45.3}
+
+        >>> # With persistence (new feature)
+        >>> from src.retrieval.storage import create_storage_backend, StorageConfig
+        >>> config = StorageConfig.from_env()
+        >>> storage = create_storage_backend(config)
+        >>> storage.connect()
+        >>> storage.initialize_schema()
+        >>> cache = asyncio.run(precompute_embeddings(
+        ...     "docs/smart_support_vtb_belarus_faq_final.xlsx",
+        ...     client,
+        ...     batch_size=20,
+        ...     storage_backend=storage
+        ... ))
     """
+    from typing import TYPE_CHECKING
+    if TYPE_CHECKING:
+        from src.retrieval.storage.base import StorageBackend
+
     start_time = time.time()
-    cache = EmbeddingCache()
+    cache = EmbeddingCache(storage_backend=None)  # Don't load from storage during precompute
 
     logger.info(f"Starting embedding precomputation (batch_size={batch_size})")
 
@@ -317,6 +339,46 @@ async def precompute_embeddings(
                 )
                 cache.add(metadata.template_id, embedding, metadata)
                 succeeded_count += 1
+
+            # Store to persistent storage if backend provided
+            if storage_backend is not None and storage_backend.is_connected():
+                try:
+                    # Get or create version for current model
+                    version_id = storage_backend.get_or_create_version(
+                        model_name=embeddings_client.model,
+                        model_version="v1",  # Default version
+                        embedding_dimension=EMBEDDING_DIM
+                    )
+
+                    # Import utilities for content hashing
+                    from src.utils.hashing import compute_content_hash
+                    from src.retrieval.storage.models import EmbeddingRecordCreate
+
+                    # Store batch in storage
+                    records_to_store = []
+                    for template, embedding in zip(batch, embeddings):
+                        template_id = template.get('id', f"tmpl_{template['category']}_{len(records_to_store)}")
+                        content_hash = compute_content_hash(template['question'], template['answer'])
+
+                        record = EmbeddingRecordCreate(
+                            template_id=template_id,
+                            version_id=version_id,
+                            embedding_vector=embedding,
+                            category=template['category'],
+                            subcategory=template['subcategory'],
+                            question_text=template['question'],
+                            answer_text=template['answer'],
+                            content_hash=content_hash,
+                            success_rate=0.5,
+                            usage_count=0
+                        )
+                        records_to_store.append(record)
+
+                    storage_backend.store_embeddings_batch(records_to_store)
+                    logger.debug(f"Stored batch {batch_idx} to persistent storage")
+
+                except Exception as e:
+                    logger.warning(f"Failed to store batch {batch_idx} to storage: {e}")
 
             logger.info(
                 f"✓ Embedded batch {batch_idx}/{len(batches)}: "

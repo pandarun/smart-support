@@ -71,6 +71,15 @@ services:
       - EMBEDDING_MODEL=${EMBEDDING_MODEL:-bge-m3}
       - RETRIEVAL_TOP_K=${RETRIEVAL_TOP_K:-5}
       - RETRIEVAL_TIMEOUT_SECONDS=${RETRIEVAL_TIMEOUT_SECONDS:-1.0}
+      # Persistent storage configuration
+      - STORAGE_BACKEND=${STORAGE_BACKEND:-sqlite}
+      - SQLITE_DB_PATH=/app/data/embeddings.db
+      # PostgreSQL configuration (if STORAGE_BACKEND=postgres)
+      # - POSTGRES_HOST=postgres
+      # - POSTGRES_PORT=5432
+      # - POSTGRES_DATABASE=smart_support
+      # - POSTGRES_USER=postgres
+      # - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
 
     # Mount .env file
     env_file:
@@ -81,6 +90,8 @@ services:
       - ./data/validation:/app/data/validation:ro
       - ./data/results:/app/data/results:rw
       - ./docs:/app/docs:ro
+      # Persistent storage: Mount data directory for embeddings.db
+      - ./data:/app/data:rw
 
     # Network
     networks:
@@ -124,6 +135,23 @@ services:
   #     - classification
   #     - retrieval
 
+  # Optional: PostgreSQL with pg_vector extension
+  # Uncomment to use PostgreSQL backend instead of SQLite
+  # postgres:
+  #   image: ankane/pgvector:latest
+  #   container_name: smart-support-postgres
+  #   environment:
+  #     POSTGRES_DB: smart_support
+  #     POSTGRES_USER: postgres
+  #     POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+  #   ports:
+  #     - "5432:5432"
+  #   volumes:
+  #     - postgres-data:/var/lib/postgresql/data
+  #   networks:
+  #     - smart-support-network
+  #   restart: unless-stopped
+
 networks:
   smart-support-network:
     driver: bridge
@@ -132,3 +160,4 @@ networks:
 volumes:
   validation-data:
   results-data:
+  # postgres-data:  # Uncomment if using PostgreSQL

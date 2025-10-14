@@ -19,3 +19,14 @@ numpy>=1.24.0
 
 # API retry logic with exponential backoff
 backoff>=2.2.0
+
+# Persistent Storage Module - Production Dependencies
+
+# CLI framework for migration command
+click>=8.0.0
+
+# Modern terminal UI for progress bars
+rich>=13.0.0
+
+# PostgreSQL adapter (optional, for PostgreSQL backend)
+psycopg2-binary>=2.9.0
