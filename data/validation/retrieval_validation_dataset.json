@@ -1,0 +1,127 @@
+{
+  "version": "1.0",
+  "description": "Validation dataset for Template Retrieval Module - Ground truth for measuring top-3 accuracy",
+  "quality_gate": "≥80% top-3 accuracy (8/10 queries must have correct template in top-3)",
+  "validation_queries": [
+    {
+      "id": "val_001",
+      "query": "Как открыть накопительный счет в мобильном приложении?",
+      "category": "Счета и вклады",
+      "subcategory": "Открытие счета",
+      "correct_template_id": "tmpl_savings_mobile_001",
+      "notes": "Should prioritize mobile app-specific template for opening savings account"
+    },
+    {
+      "id": "val_002",
+      "query": "Какие документы нужны для открытия счета физическому лицу?",
+      "category": "Счета и вклады",
+      "subcategory": "Открытие счета",
+      "correct_template_id": "tmpl_savings_docs_001",
+      "notes": "Should match document requirements template for individual account opening"
+    },
+    {
+      "id": "val_003",
+      "query": "Какой процент по вкладу для пенсионеров на 12 месяцев?",
+      "category": "Счета и вклады",
+      "subcategory": "Процентные ставки",
+      "correct_template_id": "tmpl_savings_rate_pensioner_001",
+      "notes": "Should prioritize pensioner-specific rate information"
+    },
+    {
+      "id": "val_004",
+      "query": "Как получить потребительский кредит онлайн без посещения отделения?",
+      "category": "Кредиты",
+      "subcategory": "Потребительский кредит",
+      "correct_template_id": "tmpl_credit_consumer_online_001",
+      "notes": "Should match online application process for consumer credit"
+    },
+    {
+      "id": "val_005",
+      "query": "Какая максимальная сумма кредита на неотложные нужды?",
+      "category": "Кредиты",
+      "subcategory": "Потребительский кредит",
+      "correct_template_id": "tmpl_credit_consumer_maxsum_001",
+      "notes": "Should match template about maximum loan amount limits"
+    },
+    {
+      "id": "val_006",
+      "query": "Какие условия ипотеки для молодых семей с детьми?",
+      "category": "Кредиты",
+      "subcategory": "Ипотека",
+      "correct_template_id": "tmpl_credit_mortgage_family_001",
+      "notes": "Should prioritize family mortgage program with preferential terms"
+    },
+    {
+      "id": "val_007",
+      "query": "Как заказать дебетовую карту с доставкой на дом?",
+      "category": "Карты",
+      "subcategory": "Дебетовые карты",
+      "correct_template_id": "tmpl_card_debit_order_001",
+      "notes": "Should match debit card ordering template with delivery option"
+    },
+    {
+      "id": "val_008",
+      "query": "Какой кэшбэк по премиальной карте в категории путешествия?",
+      "category": "Карты",
+      "subcategory": "Дебетовые карты",
+      "correct_template_id": "tmpl_card_debit_cashback_001",
+      "notes": "Should match cashback benefits template for premium card"
+    },
+    {
+      "id": "val_009",
+      "query": "Какая процентная ставка по кредитной карте с льготным периодом?",
+      "category": "Карты",
+      "subcategory": "Кредитные карты",
+      "correct_template_id": "tmpl_card_credit_rate_001",
+      "notes": "Should match credit card rate template with grace period information"
+    },
+    {
+      "id": "val_010",
+      "query": "Как срочно заблокировать карту если ее украли?",
+      "category": "Карты",
+      "subcategory": "Блокировка карты",
+      "correct_template_id": "tmpl_card_block_stolen_001",
+      "notes": "Should match emergency card blocking template for theft scenario"
+    },
+    {
+      "id": "val_011",
+      "query": "Можно ли открыть вклад в долларах США через интернет-банк?",
+      "category": "Счета и вклады",
+      "subcategory": "Открытие счета",
+      "correct_template_id": "tmpl_savings_currency_001",
+      "notes": "Should match foreign currency deposit template with online opening option"
+    },
+    {
+      "id": "val_012",
+      "query": "Какие документы нужны для ипотеки на вторичное жилье?",
+      "category": "Кредиты",
+      "subcategory": "Ипотека",
+      "correct_template_id": "tmpl_credit_mortgage_docs_001",
+      "notes": "Should match mortgage documentation template for secondary market"
+    },
+    {
+      "id": "val_013",
+      "query": "Как настроить бесконтактную оплату на дебетовой карте?",
+      "category": "Карты",
+      "subcategory": "Дебетовые карты",
+      "correct_template_id": "tmpl_card_debit_contactless_001",
+      "notes": "Should match contactless payment setup template"
+    },
+    {
+      "id": "val_014",
+      "query": "Какая комиссия за досрочное погашение потребительского кредита?",
+      "category": "Кредиты",
+      "subcategory": "Потребительский кредит",
+      "correct_template_id": "tmpl_credit_consumer_prepay_001",
+      "notes": "Should match early repayment fee template"
+    },
+    {
+      "id": "val_015",
+      "query": "Можно ли пополнить счет вклада до окончания срока действия?",
+      "category": "Счета и вклады",
+      "subcategory": "Процентные ставки",
+      "correct_template_id": "tmpl_savings_topup_001",
+      "notes": "Should match deposit top-up policy template"
+    }
+  ]
+}
