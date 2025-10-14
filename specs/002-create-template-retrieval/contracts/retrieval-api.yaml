@@ -1,0 +1,644 @@
+openapi: 3.0.3
+info:
+  title: Template Retrieval API
+  description: |
+    Semantic search API for retrieving relevant FAQ template responses based on customer inquiries and classification results.
+
+    ## Overview
+    The Template Retrieval Module provides embeddings-based semantic search to rank and retrieve FAQ templates
+    relevant to classified customer inquiries. It integrates with the Classification Module to filter templates
+    by category/subcategory before performing similarity ranking.
+
+    ## Key Features
+    - <1 second retrieval latency (95th percentile)
+    - Top-5 ranked templates by cosine similarity
+    - ≥80% top-3 accuracy on validation queries
+    - Optional historical success rate weighting
+    - Concurrent request handling (10+ simultaneous operators)
+
+    ## Integration
+    This API is designed to be called after customer inquiry classification. The typical workflow:
+    1. Customer inquiry → Classification Module → category/subcategory
+    2. Query + classification → Retrieval Module → top-5 ranked templates
+    3. Operator reviews templates → selects/edits response → sends to customer
+  version: 1.0.0
+  contact:
+    name: Smart Support Development Team
+    email: support@example.com
+
+servers:
+  - url: http://localhost:8000/api/v1
+    description: Local development server
+  - url: http://smart-support:8000/api/v1
+    description: Docker container deployment
+
+tags:
+  - name: retrieval
+    description: Template retrieval operations
+  - name: system
+    description: System health and readiness checks
+  - name: validation
+    description: Quality validation and testing
+
+paths:
+  /retrieve:
+    post:
+      summary: Retrieve relevant templates
+      description: |
+        Retrieves top-K relevant FAQ templates for a given customer inquiry and classification result.
+
+        **Performance**: 95% of requests complete in <1 second
+
+        **Process**:
+        1. Filter templates by category/subcategory
+        2. Embed customer query using Scibox bge-m3
+        3. Calculate cosine similarity between query and template embeddings
+        4. Rank by similarity (or weighted score if historical enabled)
+        5. Return top-K results
+
+        **Error Handling**:
+        - Returns 200 with empty results if no templates in category
+        - Returns 200 with warnings if all similarity scores < 0.5
+        - Returns 503 if embeddings API unavailable
+      operationId: retrieveTemplates
+      tags:
+        - retrieval
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RetrievalRequest'
+            examples:
+              basic_retrieval:
+                summary: Basic retrieval with classification
+                value:
+                  query: "Как открыть накопительный счет в мобильном приложении?"
+                  category: "Счета и вклады"
+                  subcategory: "Открытие счета"
+                  classification_confidence: 0.92
+                  top_k: 5
+              with_historical:
+                summary: Retrieval with historical weighting
+                value:
+                  query: "Какие документы нужны для кредита?"
+                  category: "Кредиты"
+                  subcategory: "Требования"
+                  classification_confidence: 0.88
+                  top_k: 3
+                  use_historical_weighting: true
+      responses:
+        '200':
+          description: Templates retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RetrievalResponse'
+              examples:
+                success:
+                  summary: Successful retrieval with high-confidence matches
+                  value:
+                    query: "Как открыть накопительный счет в мобильном приложении?"
+                    category: "Счета и вклады"
+                    subcategory: "Открытие счета"
+                    results:
+                      - template_id: "tmpl_savings_mobile_001"
+                        template_question: "Как открыть накопительный счет через мобильное приложение?"
+                        template_answer: "Для открытия накопительного счета в мобильном приложении..."
+                        category: "Счета и вклады"
+                        subcategory: "Открытие счета"
+                        similarity_score: 0.94
+                        combined_score: 0.94
+                        rank: 1
+                        confidence_level: "high"
+                      - template_id: "tmpl_savings_branch_002"
+                        template_question: "Как открыть накопительный счет в отделении?"
+                        template_answer: "Для открытия накопительного счета в отделении банка..."
+                        category: "Счета и вклады"
+                        subcategory: "Открытие счета"
+                        similarity_score: 0.78
+                        combined_score: 0.78
+                        rank: 2
+                        confidence_level: "high"
+                    total_candidates: 12
+                    processing_time_ms: 320.5
+                    timestamp: "2025-10-14T15:30:22Z"
+                    warnings: []
+                low_confidence:
+                  summary: Retrieval with low-confidence warnings
+                  value:
+                    query: "Помогите"
+                    category: "Общие вопросы"
+                    subcategory: "Прочее"
+                    results:
+                      - template_id: "tmpl_general_001"
+                        template_question: "Как получить помощь?"
+                        template_answer: "Для получения помощи..."
+                        category: "Общие вопросы"
+                        subcategory: "Прочее"
+                        similarity_score: 0.42
+                        combined_score: 0.42
+                        rank: 1
+                        confidence_level: "low"
+                    total_candidates: 5
+                    processing_time_ms: 280.1
+                    timestamp: "2025-10-14T15:31:10Z"
+                    warnings:
+                      - "Low confidence matches - query may be too generic"
+        '400':
+          description: Invalid request (validation error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalid_category:
+                  summary: Category not found in FAQ database
+                  value:
+                    error: "ValidationError"
+                    message: "Category 'InvalidCategory' not found in FAQ database"
+                    details:
+                      - field: "category"
+                        issue: "Must be one of: Счета и вклады, Кредиты, Карты, ..."
+        '503':
+          description: Service unavailable (embeddings API failure)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                api_failure:
+                  summary: Scibox embeddings API unavailable
+                  value:
+                    error: "ServiceUnavailable"
+                    message: "Failed to compute query embedding - embeddings API unavailable"
+                    details:
+                      - retry_after_seconds: 30
+                        reason: "Scibox API connection timeout"
+
+  /health:
+    get:
+      summary: Health check
+      description: Check if retrieval service is running and responsive
+      operationId: healthCheck
+      tags:
+        - system
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [healthy]
+                  timestamp:
+                    type: string
+                    format: date-time
+              example:
+                status: "healthy"
+                timestamp: "2025-10-14T15:30:00Z"
+
+  /readiness:
+    get:
+      summary: Readiness check
+      description: |
+        Check if retrieval service is ready to accept requests (embeddings precomputed).
+
+        **States**:
+        - `ready`: All template embeddings precomputed, service operational
+        - `precomputing`: Embedding precomputation in progress, service not yet ready
+        - `partial`: Some templates failed embedding, service operational but with reduced coverage
+        - `not_ready`: Precomputation failed, service cannot accept requests
+      operationId: readinessCheck
+      tags:
+        - system
+      responses:
+        '200':
+          description: Service readiness status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [ready, precomputing, partial, not_ready]
+                  total_templates:
+                    type: integer
+                    description: Total templates in FAQ database
+                  embedded_templates:
+                    type: integer
+                    description: Templates with successfully computed embeddings
+                  failed_templates:
+                    type: integer
+                    description: Templates that failed embedding computation
+                  precompute_time_seconds:
+                    type: number
+                    description: Time taken for embedding precomputation
+                  timestamp:
+                    type: string
+                    format: date-time
+              examples:
+                ready:
+                  summary: Service ready (all embeddings computed)
+                  value:
+                    status: "ready"
+                    total_templates: 187
+                    embedded_templates: 187
+                    failed_templates: 0
+                    precompute_time_seconds: 42.3
+                    timestamp: "2025-10-14T15:30:00Z"
+                precomputing:
+                  summary: Precomputation in progress
+                  value:
+                    status: "precomputing"
+                    total_templates: 187
+                    embedded_templates: 120
+                    failed_templates: 0
+                    precompute_time_seconds: null
+                    timestamp: "2025-10-14T15:29:30Z"
+                partial:
+                  summary: Partial readiness (some embeddings failed)
+                  value:
+                    status: "partial"
+                    total_templates: 187
+                    embedded_templates: 182
+                    failed_templates: 5
+                    precompute_time_seconds: 48.7
+                    timestamp: "2025-10-14T15:30:10Z"
+
+  /validate:
+    post:
+      summary: Run validation against test dataset
+      description: |
+        Run retrieval validation against a dataset of query-template pairs with ground truth correct template IDs.
+
+        **Quality Gate**: Top-3 accuracy must be ≥80% for hackathon evaluation
+
+        **Validation Process**:
+        1. Load validation dataset (10+ query-template pairs)
+        2. For each query: retrieve templates, check if correct template in top-K
+        3. Calculate accuracy metrics (top-1, top-3, top-5)
+        4. Compute processing time statistics (min/max/mean/p95)
+        5. Generate detailed per-query report
+
+        **Note**: This endpoint is for testing/QA purposes, not production use
+      operationId: runValidation
+      tags:
+        - validation
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                dataset_path:
+                  type: string
+                  description: Path to validation dataset JSON file (optional, defaults to data/validation/retrieval_validation_dataset.json)
+                  example: "/data/validation/custom_validation.json"
+                top_k:
+                  type: integer
+                  minimum: 1
+                  maximum: 10
+                  default: 5
+                  description: Number of templates to retrieve per query
+      responses:
+        '200':
+          description: Validation completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationResult'
+              examples:
+                passing_validation:
+                  summary: Validation passing quality gate (≥80%)
+                  value:
+                    total_queries: 10
+                    top_1_correct: 7
+                    top_3_correct: 9
+                    top_5_correct: 10
+                    top_3_accuracy: 90.0
+                    per_query_results:
+                      - query_id: "val_001"
+                        query_text: "Как открыть накопительный счет в мобильном приложении?"
+                        correct_template_id: "tmpl_savings_mobile_001"
+                        retrieved_templates: ["tmpl_savings_mobile_001", "tmpl_savings_branch_002", ...]
+                        correct_template_rank: 1
+                        is_top_1: true
+                        is_top_3: true
+                        is_top_5: true
+                        similarity_scores:
+                          tmpl_savings_mobile_001: 0.94
+                          tmpl_savings_branch_002: 0.78
+                    avg_similarity_correct: 0.87
+                    avg_similarity_incorrect: 0.52
+                    processing_time_stats:
+                      min_ms: 245.3
+                      max_ms: 810.7
+                      mean_ms: 420.5
+                      p95_ms: 750.2
+                      sample_count: 10
+                    timestamp: "2025-10-14T15:35:00Z"
+        '400':
+          description: Validation dataset not found or invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    RetrievalRequest:
+      type: object
+      required:
+        - query
+        - category
+        - subcategory
+      properties:
+        query:
+          type: string
+          minLength: 5
+          maxLength: 5000
+          description: Customer inquiry text in Russian
+          example: "Как открыть накопительный счет в мобильном приложении?"
+        category:
+          type: string
+          minLength: 1
+          description: Classified category from Classification Module
+          example: "Счета и вклады"
+        subcategory:
+          type: string
+          minLength: 1
+          description: Classified subcategory from Classification Module
+          example: "Открытие счета"
+        classification_confidence:
+          type: number
+          minimum: 0.0
+          maximum: 1.0
+          description: Classification confidence score (informational, not used for retrieval)
+          example: 0.92
+        top_k:
+          type: integer
+          minimum: 1
+          maximum: 10
+          default: 5
+          description: Number of templates to return
+        use_historical_weighting:
+          type: boolean
+          default: false
+          description: Enable weighted scoring (0.7*similarity + 0.3*historical_success_rate)
+
+    RetrievalResponse:
+      type: object
+      required:
+        - query
+        - category
+        - subcategory
+        - results
+        - total_candidates
+        - processing_time_ms
+        - timestamp
+      properties:
+        query:
+          type: string
+          description: Original customer inquiry (echoed back)
+        category:
+          type: string
+          description: Category used for filtering
+        subcategory:
+          type: string
+          description: Subcategory used for filtering
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/RetrievalResult'
+          maxItems: 10
+          description: Ranked template results (sorted by rank ascending)
+        total_candidates:
+          type: integer
+          minimum: 0
+          description: Number of templates in category before ranking
+        processing_time_ms:
+          type: number
+          minimum: 0
+          description: Time to embed query + rank templates (milliseconds)
+        timestamp:
+          type: string
+          format: date-time
+          description: When retrieval completed
+        warnings:
+          type: array
+          items:
+            type: string
+          description: Warnings (e.g., "Low confidence matches", "No templates in category")
+          example: ["Low confidence matches - all scores < 0.5"]
+
+    RetrievalResult:
+      type: object
+      required:
+        - template_id
+        - template_question
+        - template_answer
+        - category
+        - subcategory
+        - similarity_score
+        - combined_score
+        - rank
+        - confidence_level
+      properties:
+        template_id:
+          type: string
+          description: Template identifier
+          example: "tmpl_savings_mobile_001"
+        template_question:
+          type: string
+          description: Template question text
+          example: "Как открыть накопительный счет через мобильное приложение?"
+        template_answer:
+          type: string
+          description: Template answer text
+          example: "Для открытия накопительного счета в мобильном приложении..."
+        category:
+          type: string
+          description: Template category
+          example: "Счета и вклады"
+        subcategory:
+          type: string
+          description: Template subcategory
+          example: "Открытие счета"
+        similarity_score:
+          type: number
+          minimum: 0.0
+          maximum: 1.0
+          description: Cosine similarity between query and template embeddings
+          example: 0.94
+        combined_score:
+          type: number
+          minimum: 0.0
+          maximum: 1.0
+          description: Final ranking score (similarity or weighted with historical)
+          example: 0.94
+        rank:
+          type: integer
+          minimum: 1
+          description: Position in ranked results (1 = best match)
+          example: 1
+        confidence_level:
+          type: string
+          enum: [high, medium, low]
+          description: "Confidence level: high (>0.7), medium (0.5-0.7), low (<0.5)"
+          example: "high"
+
+    ValidationResult:
+      type: object
+      required:
+        - total_queries
+        - top_1_correct
+        - top_3_correct
+        - top_5_correct
+        - top_3_accuracy
+        - per_query_results
+        - avg_similarity_correct
+        - avg_similarity_incorrect
+        - processing_time_stats
+        - timestamp
+      properties:
+        total_queries:
+          type: integer
+          minimum: 1
+          description: Number of validation queries tested
+        top_1_correct:
+          type: integer
+          minimum: 0
+          description: Queries where correct template ranked #1
+        top_3_correct:
+          type: integer
+          minimum: 0
+          description: Queries where correct template in top-3 (quality gate)
+        top_5_correct:
+          type: integer
+          minimum: 0
+          description: Queries where correct template in top-5
+        top_3_accuracy:
+          type: number
+          minimum: 0.0
+          maximum: 100.0
+          description: Percentage - top_3_correct / total_queries * 100 (quality gate ≥80%)
+        per_query_results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationQueryResult'
+        avg_similarity_correct:
+          type: number
+          minimum: 0.0
+          maximum: 1.0
+          description: Average similarity score for correct templates
+        avg_similarity_incorrect:
+          type: number
+          minimum: 0.0
+          maximum: 1.0
+          description: Average similarity score for top-ranked incorrect templates
+        processing_time_stats:
+          $ref: '#/components/schemas/ProcessingTimeStats'
+        timestamp:
+          type: string
+          format: date-time
+
+    ValidationQueryResult:
+      type: object
+      required:
+        - query_id
+        - query_text
+        - correct_template_id
+        - retrieved_templates
+        - is_top_1
+        - is_top_3
+        - is_top_5
+        - similarity_scores
+      properties:
+        query_id:
+          type: string
+        query_text:
+          type: string
+        correct_template_id:
+          type: string
+        retrieved_templates:
+          type: array
+          items:
+            type: string
+          description: Template IDs retrieved (in rank order)
+        correct_template_rank:
+          type: integer
+          minimum: 1
+          nullable: true
+          description: Rank of correct template (null if not retrieved)
+        is_top_1:
+          type: boolean
+        is_top_3:
+          type: boolean
+        is_top_5:
+          type: boolean
+        similarity_scores:
+          type: object
+          additionalProperties:
+            type: number
+          description: Template ID -> similarity score mapping
+
+    ProcessingTimeStats:
+      type: object
+      required:
+        - min_ms
+        - max_ms
+        - mean_ms
+        - p95_ms
+        - sample_count
+      properties:
+        min_ms:
+          type: number
+          minimum: 0
+        max_ms:
+          type: number
+          minimum: 0
+        mean_ms:
+          type: number
+          minimum: 0
+        p95_ms:
+          type: number
+          minimum: 0
+          description: 95th percentile (performance requirement < 1000ms)
+        sample_count:
+          type: integer
+          minimum: 1
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+        - message
+      properties:
+        error:
+          type: string
+          description: Error type/category
+          example: "ValidationError"
+        message:
+          type: string
+          description: Human-readable error message
+          example: "Category 'InvalidCategory' not found in FAQ database"
+        details:
+          type: array
+          items:
+            type: object
+          description: Additional error details (field-specific validation errors, retry info, etc.)
+
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: Optional API key for production deployment (not used in MVP)
+
+security: []  # No authentication required for hackathon MVP
