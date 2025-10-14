@@ -195,7 +195,9 @@ class SQLiteBackend(StorageBackend):
             if row:
                 return row['version_id']
 
-            # Create new version
+            # Create new version - set all others to not current first
+            self._conn.execute("UPDATE embedding_versions SET is_current = 0")
+
             cursor = self._conn.execute(
                 """
                 INSERT INTO embedding_versions (model_name, model_version, embedding_dimension, is_current)

@@ -38,11 +38,18 @@ def sample_embedding():
 
 
 @pytest.fixture
-def sample_record(sample_embedding):
-    """Create sample embedding record."""
+def test_version(in_memory_backend):
+    """Create test version and return version_id."""
+    version_id = in_memory_backend.get_or_create_version("bge-m3", "v1", 1024)
+    return version_id
+
+
+@pytest.fixture
+def sample_record(sample_embedding, test_version):
+    """Create sample embedding record with valid version_id."""
     return EmbeddingRecordCreate(
         template_id="tmpl_test_001",
-        version_id=1,
+        version_id=test_version,
         embedding_vector=sample_embedding,
         category="Тест",
         subcategory="Подкатегория",
@@ -337,7 +344,7 @@ class TestCRUDOperations:
         assert len(cat1_embeddings) == 2
         assert all(e.category == "Cat1" for e in cat1_embeddings)
 
-    def test_update_embedding(self, in_memory_backend, sample_record):
+    def test_update_embedding(self, in_memory_backend, sample_record, test_version):
         """Test updating existing embedding."""
         in_memory_backend.store_embedding(sample_record)
 
@@ -345,7 +352,7 @@ class TestCRUDOperations:
         new_embedding = np.random.randn(1024).astype(np.float32)
         updated_record = EmbeddingRecordCreate(
             template_id="tmpl_test_001",
-            version_id=1,
+            version_id=test_version,
             embedding_vector=new_embedding,
             category="Updated Category",
             subcategory="Updated Sub",
