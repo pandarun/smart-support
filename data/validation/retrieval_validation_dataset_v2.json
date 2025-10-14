@@ -1,0 +1,127 @@
+{
+  "version": "2.0",
+  "description": "Validation dataset for Template Retrieval Module - Generated from actual FAQ file",
+  "quality_gate": "≥80% top-3 accuracy (12/15 queries must have correct template in top-3)",
+  "validation_queries": [
+    {
+      "id": "val_001",
+      "query": "Как открыть вклад Мои условия?",
+      "category": "Продукты - Вклады",
+      "subcategory": "Рублевые - Мои условия",
+      "correct_template_id": "tmpl_109",
+      "notes": "Template from FAQ row 109"
+    },
+    {
+      "id": "val_002",
+      "query": "Как открыть онлайн вклад?",
+      "category": "Продукты - Вклады",
+      "subcategory": "Рублевые - Мои условия онлайн",
+      "correct_template_id": "tmpl_114",
+      "notes": "Template from FAQ row 114"
+    },
+    {
+      "id": "val_003",
+      "query": "Что особенного в вкладе Великий путь?",
+      "category": "Продукты - Вклады",
+      "subcategory": "Рублевые - Великий путь",
+      "correct_template_id": "tmpl_118",
+      "notes": "Template from FAQ row 118"
+    },
+    {
+      "id": "val_004",
+      "query": "На какой срок можно открыть вклад СуперСемь?",
+      "category": "Продукты - Вклады",
+      "subcategory": "Рублевые - СуперСемь",
+      "correct_template_id": "tmpl_121",
+      "notes": "Template from FAQ row 121"
+    },
+    {
+      "id": "val_005",
+      "query": "Можно ли пополнять вклад Валютный?",
+      "category": "Продукты - Вклады",
+      "subcategory": "Валютные - EUR",
+      "correct_template_id": "tmpl_130",
+      "notes": "Template from FAQ row 130"
+    },
+    {
+      "id": "val_006",
+      "query": "Как оформить кредит На всё про всё?",
+      "category": "Продукты - Кредиты",
+      "subcategory": "Потребительские - На всё про всё",
+      "correct_template_id": "tmpl_074",
+      "notes": "Template from FAQ row 74"
+    },
+    {
+      "id": "val_007",
+      "query": "Что такое снижаемая ставка по кредиту?",
+      "category": "Продукты - Кредиты",
+      "subcategory": "Потребительские - Дальше - меньше",
+      "correct_template_id": "tmpl_080",
+      "notes": "Template from FAQ row 80"
+    },
+    {
+      "id": "val_008",
+      "query": "Как работают льготные месяцы по кредиту?",
+      "category": "Продукты - Кредиты",
+      "subcategory": "Потребительские - Легко платить",
+      "correct_template_id": "tmpl_085",
+      "notes": "Template from FAQ row 85"
+    },
+    {
+      "id": "val_009",
+      "query": "На какую сумму можно получить кредит Старт?",
+      "category": "Продукты - Кредиты",
+      "subcategory": "Потребительские - Старт",
+      "correct_template_id": "tmpl_093",
+      "notes": "Template from FAQ row 93"
+    },
+    {
+      "id": "val_010",
+      "query": "Какие документы нужны для ипотеки?",
+      "category": "Продукты - Кредиты",
+      "subcategory": "Автокредиты - Автокредит без залога",
+      "correct_template_id": "tmpl_100",
+      "notes": "Template from FAQ row 100"
+    },
+    {
+      "id": "val_011",
+      "query": "Как оформить дебетовую карту MORE?",
+      "category": "Продукты - Карты",
+      "subcategory": "Дебетовые карты - MORE",
+      "correct_template_id": "tmpl_011",
+      "notes": "Template from FAQ row 11"
+    },
+    {
+      "id": "val_012",
+      "query": "Где получить карту Форсаж?",
+      "category": "Продукты - Карты",
+      "subcategory": "Дебетовые карты - Форсаж",
+      "correct_template_id": "tmpl_019",
+      "notes": "Template from FAQ row 19"
+    },
+    {
+      "id": "val_013",
+      "query": "Как заказать премиальную карту Signature?",
+      "category": "Продукты - Карты",
+      "subcategory": "Дебетовые карты - Signature",
+      "correct_template_id": "tmpl_032",
+      "notes": "Template from FAQ row 32"
+    },
+    {
+      "id": "val_014",
+      "query": "Какой кэшбэк по кредитной карте?",
+      "category": "Продукты - Карты",
+      "subcategory": "Кредитные карты - PLAT/ON",
+      "correct_template_id": "tmpl_045",
+      "notes": "Template from FAQ row 45"
+    },
+    {
+      "id": "val_015",
+      "query": "Как заблокировать карту если она утеряна?",
+      "category": "Продукты - Карты",
+      "subcategory": "Кредитные карты - Отличник",
+      "correct_template_id": "tmpl_055",
+      "notes": "Template from FAQ row 55"
+    }
+  ]
+}

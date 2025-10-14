@@ -84,7 +84,7 @@ class TestEmbeddingCache:
     def test_add_normalizes_embedding(self, cache, sample_metadata):
         """Test that add() normalizes embeddings (L2 norm = 1.0)."""
         # Arrange
-        embedding = np.random.randn(768).astype(np.float32)  # Unnormalized
+        embedding = np.random.randn(1024).astype(np.float32)  # Unnormalized
         original_norm = np.linalg.norm(embedding)
 
         # Act
@@ -103,7 +103,7 @@ class TestEmbeddingCache:
     def test_add_stores_metadata(self, cache, sample_metadata):
         """Test that add() stores metadata correctly."""
         # Arrange
-        embedding = np.ones(768, dtype=np.float32)
+        embedding = np.ones(1024, dtype=np.float32)
 
         # Act
         cache.add("tmpl_001", embedding, sample_metadata)
@@ -119,7 +119,7 @@ class TestEmbeddingCache:
     def test_add_empty_template_id_raises_error(self, cache, sample_metadata):
         """Test that add() with empty template_id raises ValueError."""
         # Arrange
-        embedding = np.ones(768, dtype=np.float32)
+        embedding = np.ones(1024, dtype=np.float32)
 
         # Act & Assert
         with pytest.raises(ValueError, match="template_id cannot be empty"):
@@ -131,7 +131,7 @@ class TestEmbeddingCache:
     def test_add_template_id_mismatch_raises_error(self, cache):
         """Test that template_id mismatch raises ValueError."""
         # Arrange
-        embedding = np.ones(768, dtype=np.float32)
+        embedding = np.ones(1024, dtype=np.float32)
         metadata = TemplateMetadata(
             template_id="tmpl_002",  # Different from add() parameter
             category="Test",
@@ -156,7 +156,7 @@ class TestEmbeddingCache:
     def test_add_zero_norm_embedding_raises_error(self, cache, sample_metadata):
         """Test that zero-norm embedding raises ValueError."""
         # Arrange
-        embedding = np.zeros(768, dtype=np.float32)  # Zero vector
+        embedding = np.zeros(1024, dtype=np.float32)  # Zero vector
 
         # Act & Assert
         with pytest.raises(ValueError, match="zero norm"):
@@ -173,7 +173,7 @@ class TestEmbeddingCache:
         ]
 
         for tid, cat, subcat, q, a in templates_data:
-            embedding = np.random.randn(768).astype(np.float32)
+            embedding = np.random.randn(1024).astype(np.float32)
             metadata = TemplateMetadata(
                 template_id=tid,
                 category=cat,
@@ -197,7 +197,7 @@ class TestEmbeddingCache:
         # Arrange - add one template
         cache.add(
             "tmpl_001",
-            np.ones(768, dtype=np.float32),
+            np.ones(1024, dtype=np.float32),
             TemplateMetadata(
                 template_id="tmpl_001",
                 category="Счета и вклады",
@@ -216,7 +216,7 @@ class TestEmbeddingCache:
     def test_get_by_category_returns_tuples(self, cache, sample_metadata):
         """Test that get_by_category() returns (template_id, embedding, metadata) tuples."""
         # Arrange
-        embedding = np.ones(768, dtype=np.float32)
+        embedding = np.ones(1024, dtype=np.float32)
         cache.add("tmpl_001", embedding, sample_metadata)
 
         # Act
@@ -227,7 +227,7 @@ class TestEmbeddingCache:
         template_id, stored_embedding, stored_metadata = results[0]
 
         assert template_id == "tmpl_001"
-        assert stored_embedding.shape == (768,)
+        assert stored_embedding.shape == (1024,)
         assert isinstance(stored_metadata, TemplateMetadata)
 
     def test_get_all_returns_all_templates(self, cache):
@@ -236,7 +236,7 @@ class TestEmbeddingCache:
         for i in range(5):
             cache.add(
                 f"tmpl_{i:03d}",
-                np.random.randn(768).astype(np.float32),
+                np.random.randn(1024).astype(np.float32),
                 TemplateMetadata(
                     template_id=f"tmpl_{i:03d}",
                     category="Test",
@@ -258,7 +258,7 @@ class TestEmbeddingCache:
         assert not cache.is_ready
 
         # After adding one template, becomes ready
-        cache.add("tmpl_001", np.ones(768, dtype=np.float32), sample_metadata)
+        cache.add("tmpl_001", np.ones(1024, dtype=np.float32), sample_metadata)
         assert cache.is_ready
 
     def test_stats_property(self, cache):
@@ -275,7 +275,7 @@ class TestEmbeddingCache:
         for tid, cat, subcat in templates:
             cache.add(
                 tid,
-                np.random.randn(768).astype(np.float32),
+                np.random.randn(1024).astype(np.float32),
                 TemplateMetadata(
                     template_id=tid,
                     category=cat,
@@ -300,7 +300,7 @@ class TestEmbeddingCache:
     def test_get_metadata(self, cache, sample_metadata):
         """Test get_metadata() retrieves correct metadata."""
         # Arrange
-        cache.add("tmpl_001", np.ones(768, dtype=np.float32), sample_metadata)
+        cache.add("tmpl_001", np.ones(1024, dtype=np.float32), sample_metadata)
 
         # Act
         metadata = cache.get_metadata("tmpl_001")
@@ -320,14 +320,14 @@ class TestEmbeddingCache:
     def test_get_embedding(self, cache, sample_metadata):
         """Test get_embedding() retrieves correct embedding."""
         # Arrange
-        embedding = np.ones(768, dtype=np.float32)
+        embedding = np.ones(1024, dtype=np.float32)
         cache.add("tmpl_001", embedding, sample_metadata)
 
         # Act
         stored_embedding = cache.get_embedding("tmpl_001")
 
         # Assert
-        assert stored_embedding.shape == (768,)
+        assert stored_embedding.shape == (1024,)
         # Should be normalized
         assert np.isclose(np.linalg.norm(stored_embedding), 1.0, atol=0.01)
 
@@ -345,7 +345,7 @@ class TestEmbeddingCache:
         assert not cache.has_template("tmpl_001")
 
         # After adding, exists
-        cache.add("tmpl_001", np.ones(768, dtype=np.float32), sample_metadata)
+        cache.add("tmpl_001", np.ones(1024, dtype=np.float32), sample_metadata)
         assert cache.has_template("tmpl_001")
 
         # Nonexistent still doesn't exist
@@ -357,7 +357,7 @@ class TestEmbeddingCache:
         for i in range(3):
             cache.add(
                 f"tmpl_{i:03d}",
-                np.ones(768, dtype=np.float32),
+                np.ones(1024, dtype=np.float32),
                 TemplateMetadata(
                     template_id=f"tmpl_{i:03d}",
                     category="Test",
@@ -385,7 +385,7 @@ class TestEmbeddingCache:
         for i in range(3):
             cache.add(
                 f"tmpl_{i:03d}",
-                np.ones(768, dtype=np.float32),
+                np.ones(1024, dtype=np.float32),
                 TemplateMetadata(
                     template_id=f"tmpl_{i:03d}",
                     category="Test",
@@ -403,7 +403,7 @@ class TestEmbeddingCache:
         for i in range(5):
             cache.add(
                 f"tmpl_{i:03d}",
-                np.ones(768, dtype=np.float32),
+                np.ones(1024, dtype=np.float32),
                 TemplateMetadata(
                     template_id=f"tmpl_{i:03d}",
                     category="Test",

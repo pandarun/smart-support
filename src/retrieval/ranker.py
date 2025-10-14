@@ -29,8 +29,8 @@ def cosine_similarity_batch(
     Performance: <5ms for 50 templates (requirement from constitution)
 
     Args:
-        query_embedding: Shape (768,) - query embedding vector (normalized or unnormalized)
-        template_embeddings: Shape (N, 768) - N template embedding vectors (normalized)
+        query_embedding: Shape (1024,) - query embedding vector (normalized or unnormalized)
+        template_embeddings: Shape (N, 1024) - N template embedding vectors (normalized)
 
     Returns:
         similarities: Shape (N,) - cosine similarity scores (0.0 to 1.0)
@@ -39,8 +39,8 @@ def cosine_similarity_batch(
         ValueError: If embedding shapes are invalid
 
     Example:
-        >>> query = np.random.randn(768).astype(np.float32)
-        >>> templates = np.random.randn(50, 768).astype(np.float32)
+        >>> query = np.random.randn(1024).astype(np.float32)
+        >>> templates = np.random.randn(50, 1024).astype(np.float32)
         >>> similarities = cosine_similarity_batch(query, templates)
         >>> similarities.shape
         (50,)
@@ -48,15 +48,15 @@ def cosine_similarity_batch(
         True
     """
     # Validate shapes
-    if query_embedding.ndim != 1 or query_embedding.shape[0] != 768:
+    if query_embedding.ndim != 1 or query_embedding.shape[0] != 1024:
         raise ValueError(
-            f"Invalid query embedding shape: {query_embedding.shape}, expected (768,)"
+            f"Invalid query embedding shape: {query_embedding.shape}, expected (1024,)"
         )
 
-    if template_embeddings.ndim != 2 or template_embeddings.shape[1] != 768:
+    if template_embeddings.ndim != 2 or template_embeddings.shape[1] != 1024:
         raise ValueError(
             f"Invalid template embeddings shape: {template_embeddings.shape}, "
-            f"expected (N, 768)"
+            f"expected (N, 1024)"
         )
 
     # Normalize query embedding (if not already normalized)
@@ -91,7 +91,7 @@ def rank_templates(
     - Historical weighting (if enabled): score = 0.7 * similarity + 0.3 * historical_success_rate
 
     Args:
-        query_embedding: Query embedding vector (768 dims)
+        query_embedding: Query embedding vector (1024 dims)
         candidates: List of (template_id, embedding, metadata) tuples from cache
         top_k: Number of results to return (default: 5, max: 10)
         use_historical_weighting: Enable weighted scoring with historical success rates
@@ -103,10 +103,10 @@ def rank_templates(
         ValueError: If top_k < 1 or query_embedding has invalid shape
 
     Example:
-        >>> query_emb = np.random.randn(768).astype(np.float32)
+        >>> query_emb = np.random.randn(1024).astype(np.float32)
         >>> candidates = [
-        ...     ("tmpl_001", np.random.randn(768).astype(np.float32), metadata1),
-        ...     ("tmpl_002", np.random.randn(768).astype(np.float32), metadata2),
+        ...     ("tmpl_001", np.random.randn(1024).astype(np.float32), metadata1),
+        ...     ("tmpl_002", np.random.randn(1024).astype(np.float32), metadata2),
         ... ]
         >>> results = rank_templates(query_emb, candidates, top_k=5)
         >>> len(results)
@@ -119,9 +119,9 @@ def rank_templates(
     if top_k < 1:
         raise ValueError(f"top_k must be >= 1, got {top_k}")
 
-    if query_embedding.shape != (768,):
+    if query_embedding.shape != (1024,):
         raise ValueError(
-            f"Invalid query embedding shape: {query_embedding.shape}, expected (768,)"
+            f"Invalid query embedding shape: {query_embedding.shape}, expected (1024,)"
         )
 
     # Handle empty candidates

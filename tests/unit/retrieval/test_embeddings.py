@@ -2,7 +2,7 @@
 Unit tests for EmbeddingsClient and precomputation.
 
 Tests:
-- embed() returns correct shape (768,) and dtype (float32)
+- embed() returns correct shape (1024,) and dtype (float32)
 - embed_batch() handles multiple texts
 - Exponential backoff retry on API failures (mock retries)
 - Error wrapping for Scibox API exceptions
@@ -42,11 +42,11 @@ class TestEmbeddingsClient:
 
     @patch('src.retrieval.embeddings.OpenAI')
     def test_embed_returns_correct_shape_and_dtype(self, mock_openai_class):
-        """Test that embed() returns (768,) float32 array."""
+        """Test that embed() returns (1024,) float32 array."""
         # Arrange
         mock_client = Mock()
         mock_response = Mock()
-        mock_response.data = [Mock(embedding=[0.1] * 768)]
+        mock_response.data = [Mock(embedding=[0.1] * 1024)]
         mock_client.embeddings.create = Mock(return_value=mock_response)
         mock_openai_class.return_value = mock_client
 
@@ -56,7 +56,7 @@ class TestEmbeddingsClient:
         embedding = client.embed("Test text")
 
         # Assert
-        assert embedding.shape == (768,)
+        assert embedding.shape == (1024,)
         assert embedding.dtype == np.float32
         mock_client.embeddings.create.assert_called_once()
 
@@ -80,9 +80,9 @@ class TestEmbeddingsClient:
         mock_client = Mock()
         mock_response = Mock()
         mock_response.data = [
-            Mock(embedding=[0.1] * 768),
-            Mock(embedding=[0.2] * 768),
-            Mock(embedding=[0.3] * 768)
+            Mock(embedding=[0.1] * 1024),
+            Mock(embedding=[0.2] * 1024),
+            Mock(embedding=[0.3] * 1024)
         ]
         mock_client.embeddings.create = Mock(return_value=mock_response)
         mock_openai_class.return_value = mock_client
@@ -95,7 +95,7 @@ class TestEmbeddingsClient:
         # Assert
         assert len(embeddings) == 3
         for emb in embeddings:
-            assert emb.shape == (768,)
+            assert emb.shape == (1024,)
             assert emb.dtype == np.float32
 
     @patch('src.retrieval.embeddings.OpenAI')
@@ -115,8 +115,8 @@ class TestEmbeddingsClient:
         mock_client = Mock()
         mock_response = Mock()
         mock_response.data = [
-            Mock(embedding=[0.1] * 768),
-            Mock(embedding=[0.2] * 768)
+            Mock(embedding=[0.1] * 1024),
+            Mock(embedding=[0.2] * 1024)
         ]
         mock_client.embeddings.create = Mock(return_value=mock_response)
         mock_openai_class.return_value = mock_client
@@ -143,7 +143,7 @@ class TestEmbeddingsClient:
             side_effect=[
                 OpenAIError("API Error 1"),
                 OpenAIError("API Error 2"),
-                Mock(data=[Mock(embedding=[0.1] * 768)])
+                Mock(data=[Mock(embedding=[0.1] * 1024)])
             ]
         )
         mock_openai_class.return_value = mock_client
@@ -154,7 +154,7 @@ class TestEmbeddingsClient:
         embedding = client.embed("Test text")
 
         # Assert
-        assert embedding.shape == (768,)
+        assert embedding.shape == (1024,)
         # Should have been called 3 times (2 failures + 1 success)
         assert mock_client.embeddings.create.call_count == 3
 
@@ -231,7 +231,7 @@ class TestEmbeddingsClient:
         # Arrange
         mock_client = Mock()
         mock_response = Mock()
-        mock_response.data = [Mock(embedding=[0.1] * 768)]  # Only 1, expected 3
+        mock_response.data = [Mock(embedding=[0.1] * 1024)]  # Only 1, expected 3
         mock_client.embeddings.create = Mock(return_value=mock_response)
         mock_openai_class.return_value = mock_client
 
@@ -275,8 +275,8 @@ class TestPrecomputeEmbeddings:
         mock_client = Mock()
         mock_client.embed_batch = Mock(
             return_value=[
-                np.ones(768, dtype=np.float32),
-                np.ones(768, dtype=np.float32)
+                np.ones(1024, dtype=np.float32),
+                np.ones(1024, dtype=np.float32)
             ]
         )
 
@@ -306,7 +306,7 @@ class TestPrecomputeEmbeddings:
 
         mock_client = Mock()
         mock_client.embed_batch = Mock(
-            return_value=[np.ones(768, dtype=np.float32)] * 2  # Return 2 embeddings per batch
+            return_value=[np.ones(1024, dtype=np.float32)] * 2  # Return 2 embeddings per batch
         )
 
         # Act
@@ -333,8 +333,8 @@ class TestPrecomputeEmbeddings:
         mock_client.embed_batch = Mock(
             side_effect=[
                 EmbeddingsError("Batch 1 failed"),
-                [np.ones(768, dtype=np.float32)] * 2,
-                [np.ones(768, dtype=np.float32)] * 2
+                [np.ones(1024, dtype=np.float32)] * 2,
+                [np.ones(1024, dtype=np.float32)] * 2
             ]
         )
 
@@ -412,7 +412,7 @@ class TestPrecomputeEmbeddings:
 
         mock_client = Mock()
         mock_client.embed_batch = Mock(
-            return_value=[np.ones(768, dtype=np.float32)] * 2
+            return_value=[np.ones(1024, dtype=np.float32)] * 2
         )
 
         # Act

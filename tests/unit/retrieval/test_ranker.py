@@ -28,8 +28,8 @@ class TestCosineSimilarityBatch:
     def test_cosine_similarity_identical_vectors(self):
         """Test that identical vectors have similarity = 1.0."""
         # Arrange
-        query = np.ones(768, dtype=np.float32)
-        templates = np.ones((5, 768), dtype=np.float32)
+        query = np.ones(1024, dtype=np.float32)
+        templates = np.ones((5, 1024), dtype=np.float32)
 
         # Act
         similarities = cosine_similarity_batch(query, templates)
@@ -41,10 +41,10 @@ class TestCosineSimilarityBatch:
     def test_cosine_similarity_orthogonal_vectors(self):
         """Test that orthogonal vectors have similarity ≈ 0.0."""
         # Arrange - create orthogonal vectors
-        query = np.zeros(768, dtype=np.float32)
+        query = np.zeros(1024, dtype=np.float32)
         query[0] = 1.0  # Vector along first axis
 
-        template = np.zeros(768, dtype=np.float32)
+        template = np.zeros(1024, dtype=np.float32)
         template[1] = 1.0  # Vector along second axis (orthogonal)
 
         templates = np.array([template])
@@ -59,8 +59,8 @@ class TestCosineSimilarityBatch:
     def test_cosine_similarity_opposite_vectors(self):
         """Test that opposite vectors have similarity = 0.0 (clamped from -1.0)."""
         # Arrange
-        query = np.ones(768, dtype=np.float32)
-        template = -np.ones(768, dtype=np.float32)
+        query = np.ones(1024, dtype=np.float32)
+        template = -np.ones(1024, dtype=np.float32)
         templates = np.array([template])
 
         # Act
@@ -74,17 +74,17 @@ class TestCosineSimilarityBatch:
         """Test that invalid shapes raise ValueError."""
         # Test invalid query shape
         with pytest.raises(ValueError, match="Invalid query embedding shape"):
-            cosine_similarity_batch(np.ones(100), np.ones((5, 768)))
+            cosine_similarity_batch(np.ones(100), np.ones((5, 1024)))
 
         # Test invalid template shape
         with pytest.raises(ValueError, match="Invalid template embeddings shape"):
-            cosine_similarity_batch(np.ones(768), np.ones((5, 100)))
+            cosine_similarity_batch(np.ones(1024), np.ones((5, 100)))
 
     def test_cosine_similarity_zero_norm_query(self):
         """Test that zero-norm query raises ValueError."""
         # Arrange
-        query = np.zeros(768, dtype=np.float32)  # Zero vector
-        templates = np.ones((5, 768), dtype=np.float32)
+        query = np.zeros(1024, dtype=np.float32)  # Zero vector
+        templates = np.ones((5, 1024), dtype=np.float32)
 
         # Act & Assert
         with pytest.raises(ValueError, match="zero norm"):
@@ -93,10 +93,10 @@ class TestCosineSimilarityBatch:
     def test_cosine_similarity_normalized_inputs(self):
         """Test that pre-normalized inputs work correctly."""
         # Arrange - create normalized vectors
-        query = np.random.randn(768).astype(np.float32)
+        query = np.random.randn(1024).astype(np.float32)
         query = query / np.linalg.norm(query)
 
-        templates = np.random.randn(10, 768).astype(np.float32)
+        templates = np.random.randn(10, 1024).astype(np.float32)
         templates = templates / np.linalg.norm(templates, axis=1, keepdims=True)
 
         # Act
@@ -110,8 +110,8 @@ class TestCosineSimilarityBatch:
     def test_cosine_similarity_range(self):
         """Test that similarities are in [0, 1] range."""
         # Arrange
-        query = np.random.randn(768).astype(np.float32)
-        templates = np.random.randn(50, 768).astype(np.float32)
+        query = np.random.randn(1024).astype(np.float32)
+        templates = np.random.randn(50, 1024).astype(np.float32)
 
         # Act
         similarities = cosine_similarity_batch(query, templates)
@@ -133,7 +133,7 @@ class TestRankTemplates:
             template_id = f"tmpl_{i:03d}"
             # Create embeddings with decreasing similarity to query
             # (query will be all ones, so higher values = higher similarity)
-            embedding = np.full(768, 1.0 - (i * 0.15), dtype=np.float32)
+            embedding = np.full(1024, 1.0 - (i * 0.15), dtype=np.float32)
             embedding = embedding / np.linalg.norm(embedding)  # Normalize
 
             metadata = TemplateMetadata(
@@ -153,7 +153,7 @@ class TestRankTemplates:
     def test_rank_templates_sorting(self, sample_candidates):
         """Test that templates are sorted by similarity descending."""
         # Arrange
-        query_embedding = np.ones(768, dtype=np.float32)
+        query_embedding = np.ones(1024, dtype=np.float32)
 
         # Act
         results = rank_templates(query_embedding, sample_candidates, top_k=5)
@@ -173,7 +173,7 @@ class TestRankTemplates:
     def test_rank_templates_top_k_truncation(self, sample_candidates):
         """Test that top_k parameter limits results."""
         # Arrange
-        query_embedding = np.ones(768, dtype=np.float32)
+        query_embedding = np.ones(1024, dtype=np.float32)
 
         # Test different top_k values
         for top_k in [1, 2, 3]:
@@ -186,7 +186,7 @@ class TestRankTemplates:
     def test_rank_templates_empty_candidates(self):
         """Test that empty candidates list returns empty results."""
         # Arrange
-        query_embedding = np.ones(768, dtype=np.float32)
+        query_embedding = np.ones(1024, dtype=np.float32)
         candidates = []
 
         # Act
@@ -198,7 +198,7 @@ class TestRankTemplates:
     def test_rank_templates_pure_similarity_scoring(self, sample_candidates):
         """Test pure similarity scoring (default, no historical weighting)."""
         # Arrange
-        query_embedding = np.ones(768, dtype=np.float32)
+        query_embedding = np.ones(1024, dtype=np.float32)
 
         # Act
         results = rank_templates(
@@ -216,7 +216,7 @@ class TestRankTemplates:
     def test_rank_templates_weighted_scoring(self, sample_candidates):
         """Test weighted scoring: 0.7*similarity + 0.3*historical."""
         # Arrange
-        query_embedding = np.ones(768, dtype=np.float32)
+        query_embedding = np.ones(1024, dtype=np.float32)
 
         # Act
         results = rank_templates(
@@ -241,7 +241,7 @@ class TestRankTemplates:
     def test_rank_templates_result_denormalization(self, sample_candidates):
         """Test that results contain denormalized template data."""
         # Arrange
-        query_embedding = np.ones(768, dtype=np.float32)
+        query_embedding = np.ones(1024, dtype=np.float32)
 
         # Act
         results = rank_templates(query_embedding, sample_candidates, top_k=3)
@@ -257,7 +257,7 @@ class TestRankTemplates:
     def test_rank_templates_confidence_levels(self, sample_candidates):
         """Test that confidence levels are computed correctly."""
         # Arrange
-        query_embedding = np.ones(768, dtype=np.float32)
+        query_embedding = np.ones(1024, dtype=np.float32)
 
         # Act
         results = rank_templates(query_embedding, sample_candidates, top_k=5)
@@ -274,7 +274,7 @@ class TestRankTemplates:
     def test_rank_templates_invalid_top_k(self, sample_candidates):
         """Test that invalid top_k raises ValueError."""
         # Arrange
-        query_embedding = np.ones(768, dtype=np.float32)
+        query_embedding = np.ones(1024, dtype=np.float32)
 
         # Act & Assert
         with pytest.raises(ValueError, match="top_k must be >= 1"):

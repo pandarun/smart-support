@@ -34,7 +34,7 @@ class Template(BaseModel):
     subcategory: str = Field(..., min_length=1, description="Second-level classification (e.g., 'Открытие счета')")
     question: str = Field(..., min_length=10, description="Template question text in Russian")
     answer: str = Field(..., min_length=20, description="Template answer text in Russian")
-    embedding: Optional[np.ndarray] = Field(None, description="Precomputed bge-m3 embedding vector (768 dims)")
+    embedding: Optional[np.ndarray] = Field(None, description="Precomputed bge-m3 embedding vector (1024 dims)")
     success_rate: float = Field(default=0.5, ge=0.0, le=1.0, description="Historical operator selection rate")
     usage_count: int = Field(default=0, ge=0, description="Number of times template selected by operators")
     created_at: datetime = Field(default_factory=datetime.now, description="Template creation timestamp")
@@ -57,10 +57,10 @@ class Template(BaseModel):
     @field_validator('embedding')
     @classmethod
     def validate_embedding_shape(cls, v: Optional[np.ndarray]) -> Optional[np.ndarray]:
-        """Ensure embedding is 768-dimensional (bge-m3 dimension)."""
+        """Ensure embedding is 1024-dimensional (bge-m3 dimension)."""
         if v is not None:
-            if v.shape != (768,):
-                raise ValueError(f"Embedding must be 768-dimensional, got {v.shape}")
+            if v.shape != (1024,):
+                raise ValueError(f"Embedding must be 1024-dimensional, got {v.shape}")
         return v
 
 
@@ -188,15 +188,15 @@ class EmbeddingVector(BaseModel):
     """
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
-    vector: np.ndarray = Field(..., description="bge-m3 embedding vector (768 dims, float32)")
+    vector: np.ndarray = Field(..., description="bge-m3 embedding vector (1024 dims, float32)")
     is_normalized: bool = Field(default=False, description="Whether vector is L2-normalized")
 
     @field_validator('vector')
     @classmethod
     def validate_shape(cls, v: np.ndarray) -> np.ndarray:
-        """Ensure vector is 768-dimensional."""
-        if v.shape != (768,):
-            raise ValueError(f"Vector must be 768-dimensional, got {v.shape}")
+        """Ensure vector is 1024-dimensional."""
+        if v.shape != (1024,):
+            raise ValueError(f"Vector must be 1024-dimensional, got {v.shape}")
         return v
 
     def normalize(self) -> "EmbeddingVector":

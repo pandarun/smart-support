@@ -1,0 +1,341 @@
+{
+  "total_queries": 15,
+  "top_1_correct": 12,
+  "top_3_correct": 13,
+  "top_5_correct": 15,
+  "per_query_results": [
+    {
+      "query_id": "val_001",
+      "query_text": "Как открыть вклад Мои условия?",
+      "correct_template_id": "tmpl_109",
+      "retrieved_templates": [
+        "tmpl_109",
+        "tmpl_113",
+        "tmpl_112",
+        "tmpl_110",
+        "tmpl_111"
+      ],
+      "correct_template_rank": 1,
+      "similarity_scores": {
+        "tmpl_109": 0.7888879776000977,
+        "tmpl_113": 0.5778917074203491,
+        "tmpl_112": 0.5452387928962708,
+        "tmpl_110": 0.43710726499557495,
+        "tmpl_111": 0.4290280342102051
+      },
+      "is_top_1": true,
+      "is_top_3": true,
+      "is_top_5": true
+    },
+    {
+      "query_id": "val_002",
+      "query_text": "Как открыть онлайн вклад?",
+      "correct_template_id": "tmpl_114",
+      "retrieved_templates": [
+        "tmpl_114",
+        "tmpl_115",
+        "tmpl_117",
+        "tmpl_116"
+      ],
+      "correct_template_rank": 1,
+      "similarity_scores": {
+        "tmpl_114": 0.7172091007232666,
+        "tmpl_115": 0.6150026917457581,
+        "tmpl_117": 0.6140276193618774,
+        "tmpl_116": 0.5739896893501282
+      },
+      "is_top_1": true,
+      "is_top_3": true,
+      "is_top_5": true
+    },
+    {
+      "query_id": "val_003",
+      "query_text": "Что особенного в вкладе Великий путь?",
+      "correct_template_id": "tmpl_118",
+      "retrieved_templates": [
+        "tmpl_118",
+        "tmpl_119",
+        "tmpl_120"
+      ],
+      "correct_template_rank": 1,
+      "similarity_scores": {
+        "tmpl_118": 0.7218565940856934,
+        "tmpl_119": 0.5763238668441772,
+        "tmpl_120": 0.35809028148651123
+      },
+      "is_top_1": true,
+      "is_top_3": true,
+      "is_top_5": true
+    },
+    {
+      "query_id": "val_004",
+      "query_text": "На какой срок можно открыть вклад СуперСемь?",
+      "correct_template_id": "tmpl_121",
+      "retrieved_templates": [
+        "tmpl_121",
+        "tmpl_122",
+        "tmpl_123"
+      ],
+      "correct_template_rank": 1,
+      "similarity_scores": {
+        "tmpl_121": 0.7416155934333801,
+        "tmpl_122": 0.5645720958709717,
+        "tmpl_123": 0.5538058280944824
+      },
+      "is_top_1": true,
+      "is_top_3": true,
+      "is_top_5": true
+    },
+    {
+      "query_id": "val_005",
+      "query_text": "Можно ли пополнять вклад Валютный?",
+      "correct_template_id": "tmpl_130",
+      "retrieved_templates": [
+        "tmpl_131",
+        "tmpl_130",
+        "tmpl_132"
+      ],
+      "correct_template_rank": 2,
+      "similarity_scores": {
+        "tmpl_131": 0.5615243911743164,
+        "tmpl_130": 0.5398030281066895,
+        "tmpl_132": 0.5049600005149841
+      },
+      "is_top_1": false,
+      "is_top_3": true,
+      "is_top_5": true
+    },
+    {
+      "query_id": "val_006",
+      "query_text": "Как оформить кредит На всё про всё?",
+      "correct_template_id": "tmpl_074",
+      "retrieved_templates": [
+        "tmpl_074",
+        "tmpl_077",
+        "tmpl_075",
+        "tmpl_078",
+        "tmpl_076"
+      ],
+      "correct_template_rank": 1,
+      "similarity_scores": {
+        "tmpl_074": 0.7166708111763,
+        "tmpl_077": 0.6054038405418396,
+        "tmpl_075": 0.5729111433029175,
+        "tmpl_078": 0.4903072118759155,
+        "tmpl_076": 0.4788629412651062
+      },
+      "is_top_1": true,
+      "is_top_3": true,
+      "is_top_5": true
+    },
+    {
+      "query_id": "val_007",
+      "query_text": "Что такое снижаемая ставка по кредиту?",
+      "correct_template_id": "tmpl_080",
+      "retrieved_templates": [
+        "tmpl_080",
+        "tmpl_082",
+        "tmpl_081",
+        "tmpl_083",
+        "tmpl_084"
+      ],
+      "correct_template_rank": 1,
+      "similarity_scores": {
+        "tmpl_080": 0.7122837901115417,
+        "tmpl_082": 0.6373646259307861,
+        "tmpl_081": 0.6055779457092285,
+        "tmpl_083": 0.5651208758354187,
+        "tmpl_084": 0.3765774369239807
+      },
+      "is_top_1": true,
+      "is_top_3": true,
+      "is_top_5": true
+    },
+    {
+      "query_id": "val_008",
+      "query_text": "Как работают льготные месяцы по кредиту?",
+      "correct_template_id": "tmpl_085",
+      "retrieved_templates": [
+        "tmpl_085",
+        "tmpl_087",
+        "tmpl_086",
+        "tmpl_088"
+      ],
+      "correct_template_rank": 1,
+      "similarity_scores": {
+        "tmpl_085": 0.7691365480422974,
+        "tmpl_087": 0.6748074889183044,
+        "tmpl_086": 0.6660361289978027,
+        "tmpl_088": 0.5848017930984497
+      },
+      "is_top_1": true,
+      "is_top_3": true,
+      "is_top_5": true
+    },
+    {
+      "query_id": "val_009",
+      "query_text": "На какую сумму можно получить кредит Старт?",
+      "correct_template_id": "tmpl_093",
+      "retrieved_templates": [
+        "tmpl_093",
+        "tmpl_094"
+      ],
+      "correct_template_rank": 1,
+      "similarity_scores": {
+        "tmpl_093": 0.7470235228538513,
+        "tmpl_094": 0.6325163841247559
+      },
+      "is_top_1": true,
+      "is_top_3": true,
+      "is_top_5": true
+    },
+    {
+      "query_id": "val_010",
+      "query_text": "Какие документы нужны для ипотеки?",
+      "correct_template_id": "tmpl_100",
+      "retrieved_templates": [
+        "tmpl_101",
+        "tmpl_102",
+        "tmpl_099",
+        "tmpl_100"
+      ],
+      "correct_template_rank": 4,
+      "similarity_scores": {
+        "tmpl_101": 0.4469410479068756,
+        "tmpl_102": 0.409523069858551,
+        "tmpl_099": 0.39340072870254517,
+        "tmpl_100": 0.37413257360458374
+      },
+      "is_top_1": false,
+      "is_top_3": false,
+      "is_top_5": true
+    },
+    {
+      "query_id": "val_011",
+      "query_text": "Как оформить дебетовую карту MORE?",
+      "correct_template_id": "tmpl_011",
+      "retrieved_templates": [
+        "tmpl_011",
+        "tmpl_015",
+        "tmpl_017",
+        "tmpl_018",
+        "tmpl_013"
+      ],
+      "correct_template_rank": 1,
+      "similarity_scores": {
+        "tmpl_011": 0.72603839635849,
+        "tmpl_015": 0.7026418447494507,
+        "tmpl_017": 0.6820569038391113,
+        "tmpl_018": 0.6659479737281799,
+        "tmpl_013": 0.648870587348938
+      },
+      "is_top_1": true,
+      "is_top_3": true,
+      "is_top_5": true
+    },
+    {
+      "query_id": "val_012",
+      "query_text": "Где получить карту Форсаж?",
+      "correct_template_id": "tmpl_019",
+      "retrieved_templates": [
+        "tmpl_019",
+        "tmpl_021",
+        "tmpl_023",
+        "tmpl_022",
+        "tmpl_025"
+      ],
+      "correct_template_rank": 1,
+      "similarity_scores": {
+        "tmpl_019": 0.741415798664093,
+        "tmpl_021": 0.667818009853363,
+        "tmpl_023": 0.6643297672271729,
+        "tmpl_022": 0.6433687210083008,
+        "tmpl_025": 0.6349016427993774
+      },
+      "is_top_1": true,
+      "is_top_3": true,
+      "is_top_5": true
+    },
+    {
+      "query_id": "val_013",
+      "query_text": "Как заказать премиальную карту Signature?",
+      "correct_template_id": "tmpl_032",
+      "retrieved_templates": [
+        "tmpl_032",
+        "tmpl_033",
+        "tmpl_035",
+        "tmpl_036",
+        "tmpl_034"
+      ],
+      "correct_template_rank": 1,
+      "similarity_scores": {
+        "tmpl_032": 0.774254322052002,
+        "tmpl_033": 0.6869761943817139,
+        "tmpl_035": 0.6687628626823425,
+        "tmpl_036": 0.6408176422119141,
+        "tmpl_034": 0.6184445023536682
+      },
+      "is_top_1": true,
+      "is_top_3": true,
+      "is_top_5": true
+    },
+    {
+      "query_id": "val_014",
+      "query_text": "Какой кэшбэк по кредитной карте?",
+      "correct_template_id": "tmpl_045",
+      "retrieved_templates": [
+        "tmpl_045",
+        "tmpl_042",
+        "tmpl_046",
+        "tmpl_044",
+        "tmpl_041"
+      ],
+      "correct_template_rank": 1,
+      "similarity_scores": {
+        "tmpl_045": 0.5151176452636719,
+        "tmpl_042": 0.49484044313430786,
+        "tmpl_046": 0.4761139452457428,
+        "tmpl_044": 0.4615400731563568,
+        "tmpl_041": 0.45556217432022095
+      },
+      "is_top_1": true,
+      "is_top_3": true,
+      "is_top_5": true
+    },
+    {
+      "query_id": "val_015",
+      "query_text": "Как заблокировать карту если она утеряна?",
+      "correct_template_id": "tmpl_055",
+      "retrieved_templates": [
+        "tmpl_054",
+        "tmpl_057",
+        "tmpl_056",
+        "tmpl_058",
+        "tmpl_055"
+      ],
+      "correct_template_rank": 5,
+      "similarity_scores": {
+        "tmpl_054": 0.4500899314880371,
+        "tmpl_057": 0.42367902398109436,
+        "tmpl_056": 0.39987319707870483,
+        "tmpl_058": 0.38409024477005005,
+        "tmpl_055": 0.37171074748039246
+      },
+      "is_top_1": false,
+      "is_top_3": false,
+      "is_top_5": true
+    }
+  ],
+  "avg_similarity_correct": 0.6638104299704234,
+  "avg_similarity_incorrect": 0.0,
+  "processing_time_stats": {
+    "min_ms": 227.7681827545166,
+    "max_ms": 327.62980461120605,
+    "mean_ms": 249.8547395070394,
+    "p95_ms": 303.51893901824945,
+    "sample_count": 15
+  },
+  "timestamp": "2025-10-15T00:40:35.192406",
+  "top_3_accuracy": 86.66666666666667,
+  "passes_quality_gate": true
+}

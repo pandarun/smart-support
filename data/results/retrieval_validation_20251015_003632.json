@@ -1,0 +1,185 @@
+{
+  "total_queries": 15,
+  "top_1_correct": 0,
+  "top_3_correct": 0,
+  "top_5_correct": 0,
+  "per_query_results": [
+    {
+      "query_id": "val_001",
+      "query_text": "Как открыть накопительный счет в мобильном приложении?",
+      "correct_template_id": "tmpl_savings_mobile_001",
+      "retrieved_templates": [],
+      "correct_template_rank": null,
+      "similarity_scores": {},
+      "is_top_1": false,
+      "is_top_3": false,
+      "is_top_5": false
+    },
+    {
+      "query_id": "val_002",
+      "query_text": "Какие документы нужны для открытия счета физическому лицу?",
+      "correct_template_id": "tmpl_savings_docs_001",
+      "retrieved_templates": [],
+      "correct_template_rank": null,
+      "similarity_scores": {},
+      "is_top_1": false,
+      "is_top_3": false,
+      "is_top_5": false
+    },
+    {
+      "query_id": "val_003",
+      "query_text": "Какой процент по вкладу для пенсионеров на 12 месяцев?",
+      "correct_template_id": "tmpl_savings_rate_pensioner_001",
+      "retrieved_templates": [],
+      "correct_template_rank": null,
+      "similarity_scores": {},
+      "is_top_1": false,
+      "is_top_3": false,
+      "is_top_5": false
+    },
+    {
+      "query_id": "val_004",
+      "query_text": "Как получить потребительский кредит онлайн без посещения отделения?",
+      "correct_template_id": "tmpl_credit_consumer_online_001",
+      "retrieved_templates": [],
+      "correct_template_rank": null,
+      "similarity_scores": {},
+      "is_top_1": false,
+      "is_top_3": false,
+      "is_top_5": false
+    },
+    {
+      "query_id": "val_005",
+      "query_text": "Какая максимальная сумма кредита на неотложные нужды?",
+      "correct_template_id": "tmpl_credit_consumer_maxsum_001",
+      "retrieved_templates": [],
+      "correct_template_rank": null,
+      "similarity_scores": {},
+      "is_top_1": false,
+      "is_top_3": false,
+      "is_top_5": false
+    },
+    {
+      "query_id": "val_006",
+      "query_text": "Какие условия ипотеки для молодых семей с детьми?",
+      "correct_template_id": "tmpl_credit_mortgage_family_001",
+      "retrieved_templates": [],
+      "correct_template_rank": null,
+      "similarity_scores": {},
+      "is_top_1": false,
+      "is_top_3": false,
+      "is_top_5": false
+    },
+    {
+      "query_id": "val_007",
+      "query_text": "Как заказать дебетовую карту с доставкой на дом?",
+      "correct_template_id": "tmpl_card_debit_order_001",
+      "retrieved_templates": [],
+      "correct_template_rank": null,
+      "similarity_scores": {},
+      "is_top_1": false,
+      "is_top_3": false,
+      "is_top_5": false
+    },
+    {
+      "query_id": "val_008",
+      "query_text": "Какой кэшбэк по премиальной карте в категории путешествия?",
+      "correct_template_id": "tmpl_card_debit_cashback_001",
+      "retrieved_templates": [],
+      "correct_template_rank": null,
+      "similarity_scores": {},
+      "is_top_1": false,
+      "is_top_3": false,
+      "is_top_5": false
+    },
+    {
+      "query_id": "val_009",
+      "query_text": "Какая процентная ставка по кредитной карте с льготным периодом?",
+      "correct_template_id": "tmpl_card_credit_rate_001",
+      "retrieved_templates": [],
+      "correct_template_rank": null,
+      "similarity_scores": {},
+      "is_top_1": false,
+      "is_top_3": false,
+      "is_top_5": false
+    },
+    {
+      "query_id": "val_010",
+      "query_text": "Как срочно заблокировать карту если ее украли?",
+      "correct_template_id": "tmpl_card_block_stolen_001",
+      "retrieved_templates": [],
+      "correct_template_rank": null,
+      "similarity_scores": {},
+      "is_top_1": false,
+      "is_top_3": false,
+      "is_top_5": false
+    },
+    {
+      "query_id": "val_011",
+      "query_text": "Можно ли открыть вклад в долларах США через интернет-банк?",
+      "correct_template_id": "tmpl_savings_currency_001",
+      "retrieved_templates": [],
+      "correct_template_rank": null,
+      "similarity_scores": {},
+      "is_top_1": false,
+      "is_top_3": false,
+      "is_top_5": false
+    },
+    {
+      "query_id": "val_012",
+      "query_text": "Какие документы нужны для ипотеки на вторичное жилье?",
+      "correct_template_id": "tmpl_credit_mortgage_docs_001",
+      "retrieved_templates": [],
+      "correct_template_rank": null,
+      "similarity_scores": {},
+      "is_top_1": false,
+      "is_top_3": false,
+      "is_top_5": false
+    },
+    {
+      "query_id": "val_013",
+      "query_text": "Как настроить бесконтактную оплату на дебетовой карте?",
+      "correct_template_id": "tmpl_card_debit_contactless_001",
+      "retrieved_templates": [],
+      "correct_template_rank": null,
+      "similarity_scores": {},
+      "is_top_1": false,
+      "is_top_3": false,
+      "is_top_5": false
+    },
+    {
+      "query_id": "val_014",
+      "query_text": "Какая комиссия за досрочное погашение потребительского кредита?",
+      "correct_template_id": "tmpl_credit_consumer_prepay_001",
+      "retrieved_templates": [],
+      "correct_template_rank": null,
+      "similarity_scores": {},
+      "is_top_1": false,
+      "is_top_3": false,
+      "is_top_5": false
+    },
+    {
+      "query_id": "val_015",
+      "query_text": "Можно ли пополнить счет вклада до окончания срока действия?",
+      "correct_template_id": "tmpl_savings_topup_001",
+      "retrieved_templates": [],
+      "correct_template_rank": null,
+      "similarity_scores": {},
+      "is_top_1": false,
+      "is_top_3": false,
+      "is_top_5": false
+    }
+  ],
+  "avg_similarity_correct": 0.0,
+  "avg_similarity_incorrect": 0.0,
+  "processing_time_stats": {
+    "min_ms": 0.03528594970703125,
+    "max_ms": 0.11181831359863281,
+    "mean_ms": 0.046412150065104164,
+    "p95_ms": 0.07910728454589838,
+    "sample_count": 15
+  },
+  "timestamp": "2025-10-15T00:36:32.469520",
+  "top_3_accuracy": 0.0,
+  "passes_quality_gate": false
+}

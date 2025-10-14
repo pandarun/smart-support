@@ -25,7 +25,7 @@ class TestTemplateRetriever:
     def mock_embeddings_client(self):
         """Mock embeddings client that returns fixed embedding."""
         client = Mock()
-        client.embed = Mock(return_value=np.ones(768, dtype=np.float32))
+        client.embed = Mock(return_value=np.ones(1024, dtype=np.float32))
         return client
 
     @pytest.fixture
@@ -38,7 +38,7 @@ class TestTemplateRetriever:
             template_id = f"tmpl_{i:03d}"
             # Create embeddings with decreasing similarity to query (all ones)
             # More ones = higher similarity
-            embedding = np.full(768, 1.0 - (i * 0.2), dtype=np.float32)
+            embedding = np.full(1024, 1.0 - (i * 0.2), dtype=np.float32)
 
             metadata = TemplateMetadata(
                 template_id=template_id,
@@ -59,7 +59,7 @@ class TestTemplateRetriever:
         # Add one dummy template to make cache ready, but in different category
         cache.add(
             "dummy",
-            np.ones(768, dtype=np.float32),
+            np.ones(1024, dtype=np.float32),
             TemplateMetadata(
                 template_id="dummy",
                 category="Другая категория",
@@ -163,7 +163,7 @@ class TestTemplateRetriever:
 
         # Mock embed to return vector with very low similarity
         mock_embeddings_client.embed = Mock(
-            return_value=np.full(768, -1.0, dtype=np.float32)  # Will have low similarity
+            return_value=np.full(1024, -1.0, dtype=np.float32)  # Will have low similarity
         )
 
         request = RetrievalRequest(

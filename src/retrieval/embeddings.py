@@ -21,6 +21,9 @@ from src.retrieval.cache import EmbeddingCache, TemplateMetadata
 
 logger = logging.getLogger(__name__)
 
+# BGE-M3 model produces 1024-dimensional embeddings
+EMBEDDING_DIM = 1024
+
 
 class EmbeddingsError(Exception):
     """Base exception for embeddings API errors."""
@@ -41,7 +44,7 @@ class EmbeddingsClient:
         >>> client = EmbeddingsClient()
         >>> embedding = client.embed("Как открыть счет?")
         >>> print(embedding.shape)
-        (768,)
+        (1024,)
     """
 
     def __init__(
@@ -104,7 +107,7 @@ class EmbeddingsClient:
             text: Input text to embed (customer inquiry, template, etc.)
 
         Returns:
-            Embedding vector as numpy array (shape: (768,), dtype: float32)
+            Embedding vector as numpy array (shape: (1024,), dtype: float32)
 
         Raises:
             EmbeddingsError: If API call fails after all retries
@@ -113,7 +116,7 @@ class EmbeddingsClient:
             >>> client = EmbeddingsClient()
             >>> embedding = client.embed("Как открыть накопительный счет?")
             >>> embedding.shape
-            (768,)
+            (1024,)
         """
         if not text or not text.strip():
             raise ValueError("Text cannot be empty")
@@ -129,10 +132,10 @@ class EmbeddingsClient:
 
             embedding = np.array(response.data[0].embedding, dtype=np.float32)
 
-            # Validate embedding shape (bge-m3 should be 768-dimensional)
-            if embedding.shape != (768,):
+            # Validate embedding shape (bge-m3 produces 1024-dimensional embeddings)
+            if embedding.shape != (EMBEDDING_DIM,):
                 raise EmbeddingsError(
-                    f"Unexpected embedding shape: {embedding.shape}, expected (768,)"
+                    f"Unexpected embedding shape: {embedding.shape}, expected ({EMBEDDING_DIM},)"
                 )
 
             return embedding
@@ -167,7 +170,7 @@ class EmbeddingsClient:
             texts: List of input texts to embed
 
         Returns:
-            List of embedding vectors as numpy arrays (each shape: (768,), dtype: float32)
+            List of embedding vectors as numpy arrays (each shape: (1024,), dtype: float32)
 
         Raises:
             EmbeddingsError: If API call fails after all retries
@@ -180,7 +183,7 @@ class EmbeddingsClient:
             >>> len(embeddings)
             2
             >>> embeddings[0].shape
-            (768,)
+            (1024,)
         """
         if not texts:
             raise ValueError("Texts list cannot be empty")
@@ -209,9 +212,9 @@ class EmbeddingsClient:
                 embedding = np.array(emb_data.embedding, dtype=np.float32)
 
                 # Validate embedding shape
-                if embedding.shape != (768,):
+                if embedding.shape != (EMBEDDING_DIM,):
                     raise EmbeddingsError(
-                        f"Unexpected embedding shape at index {i}: {embedding.shape}, expected (768,)"
+                        f"Unexpected embedding shape at index {i}: {embedding.shape}, expected ({EMBEDDING_DIM},)"
                     )
 
                 embeddings.append(embedding)

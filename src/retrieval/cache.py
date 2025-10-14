@@ -42,7 +42,7 @@ class EmbeddingCache:
     - Statistics for monitoring and validation
 
     Memory footprint estimate:
-    - 200 templates × 768 dims × 4 bytes (float32) = ~600 KB
+    - 200 templates × 1024 dims × 4 bytes (float32) = ~600 KB
     - 200 templates × ~1 KB metadata = ~200 KB
     - Total: ~1 MB (scales easily to 1000+ templates)
 
@@ -57,7 +57,7 @@ class EmbeddingCache:
         ...     question="Как открыть счет?",
         ...     answer="Для открытия счета..."
         ... )
-        >>> embedding = np.random.randn(768).astype(np.float32)
+        >>> embedding = np.random.randn(1024).astype(np.float32)
         >>> cache.add("tmpl_001", embedding, metadata)
         >>> cache.is_ready
         True
@@ -92,7 +92,7 @@ class EmbeddingCache:
 
         Args:
             template_id: Unique template identifier
-            embedding: Raw embedding vector (768 dims, float32)
+            embedding: Raw embedding vector (1024 dims, float32)
             metadata: Template metadata for filtering and display
 
         Raises:
@@ -101,7 +101,7 @@ class EmbeddingCache:
 
         Example:
             >>> cache = EmbeddingCache()
-            >>> embedding = np.array([...])  # 768-dim vector
+            >>> embedding = np.array([...])  # 1024-dim vector
             >>> metadata = TemplateMetadata(template_id="tmpl_001", ...)
             >>> cache.add("tmpl_001", embedding, metadata)
         """
@@ -113,9 +113,9 @@ class EmbeddingCache:
                 f"template_id mismatch: '{template_id}' != '{metadata.template_id}'"
             )
 
-        if embedding.shape != (768,):
+        if embedding.shape != (1024,):
             raise ValueError(
-                f"Invalid embedding shape: {embedding.shape}, expected (768,)"
+                f"Invalid embedding shape: {embedding.shape}, expected (1024,)"
             )
 
         # Normalize embedding (L2 normalization)
@@ -163,7 +163,7 @@ class EmbeddingCache:
             15
             >>> template_id, embedding, metadata = candidates[0]
             >>> embedding.shape
-            (768,)
+            (1024,)
         """
         candidates = []
 
@@ -244,10 +244,10 @@ class EmbeddingCache:
         )
 
         # Estimate memory usage
-        # embeddings: N × 768 × 4 bytes (float32)
+        # embeddings: N × 1024 × 4 bytes (float32)
         # metadata: N × ~1 KB (estimated average per template)
         num_templates = len(self.embeddings)
-        embedding_memory_mb = (num_templates * 768 * 4) / (1024 * 1024)
+        embedding_memory_mb = (num_templates * 1024 * 4) / (1024 * 1024)
         metadata_memory_mb = (num_templates * 1024) / (1024 * 1024)
         total_memory_mb = embedding_memory_mb + metadata_memory_mb
 
@@ -289,7 +289,7 @@ class EmbeddingCache:
         Example:
             >>> embedding = cache.get_embedding("tmpl_001")
             >>> embedding.shape
-            (768,)
+            (1024,)
             >>> np.linalg.norm(embedding)  # Should be ~1.0 (normalized)
             1.0
         """
