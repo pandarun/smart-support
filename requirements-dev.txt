@@ -1,0 +1,16 @@
+# Classification Module - Development and Testing Dependencies
+
+# Include production dependencies
+-r requirements.txt
+
+# Test framework
+pytest>=7.4.0
+
+# Async test support
+pytest-asyncio>=0.21.0
+
+# Integration test containers (constitution mandated)
+testcontainers>=3.7.0
+
+# Code coverage reporting
+pytest-cov>=4.1.0

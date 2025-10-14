@@ -1,0 +1,13 @@
+# Classification Module - Production Dependencies
+
+# Scibox API client (OpenAI-compatible)
+openai>=1.0.0
+
+# Environment variable management
+python-dotenv>=1.0.0
+
+# Data validation and models
+pydantic>=2.0.0
+
+# Excel FAQ parsing
+openpyxl>=3.1.0
