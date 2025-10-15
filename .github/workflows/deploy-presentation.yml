@@ -1,0 +1,207 @@
+name: Deploy Presentation to GitHub Pages
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'docs/smart_support_presentation.tsx'
+      - '.github/workflows/deploy-presentation.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: 'presentation/package-lock.json'
+
+      - name: Create presentation app structure
+        run: |
+          mkdir -p presentation
+          cd presentation
+
+          # Create package.json for the presentation
+          cat > package.json << 'EOF'
+          {
+            "name": "smart-support-presentation",
+            "version": "1.0.0",
+            "type": "module",
+            "scripts": {
+              "dev": "vite",
+              "build": "vite build",
+              "preview": "vite preview"
+            },
+            "dependencies": {
+              "react": "^18.2.0",
+              "react-dom": "^18.2.0",
+              "lucide-react": "^0.263.1"
+            },
+            "devDependencies": {
+              "@types/react": "^18.2.43",
+              "@types/react-dom": "^18.2.17",
+              "@vitejs/plugin-react": "^4.2.1",
+              "autoprefixer": "^10.4.16",
+              "postcss": "^8.4.32",
+              "tailwindcss": "^3.4.0",
+              "vite": "^5.0.8"
+            }
+          }
+          EOF
+
+          # Create vite.config.js
+          cat > vite.config.js << 'EOF'
+          import { defineConfig } from 'vite'
+          import react from '@vitejs/plugin-react'
+
+          export default defineConfig({
+            plugins: [react()],
+            base: '/smart-support/',
+          })
+          EOF
+
+          # Create tailwind.config.js
+          cat > tailwind.config.js << 'EOF'
+          /** @type {import('tailwindcss').Config} */
+          export default {
+            content: [
+              "./index.html",
+              "./src/**/*.{js,ts,jsx,tsx}",
+            ],
+            theme: {
+              extend: {},
+            },
+            plugins: [],
+          }
+          EOF
+
+          # Create postcss.config.js
+          cat > postcss.config.js << 'EOF'
+          export default {
+            plugins: {
+              tailwindcss: {},
+              autoprefixer: {},
+            },
+          }
+          EOF
+
+          # Create index.html
+          cat > index.html << 'EOF'
+          <!doctype html>
+          <html lang="en">
+            <head>
+              <meta charset="UTF-8" />
+              <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+              <title>Smart Support - AI-Powered Customer Support</title>
+              <meta name="description" content="Smart Support: Intelligent Classification & Template Recommendation System for Customer Support">
+            </head>
+            <body>
+              <div id="root"></div>
+              <script type="module" src="/src/main.jsx"></script>
+            </body>
+          </html>
+          EOF
+
+          # Create src directory structure
+          mkdir -p src
+
+          # Create src/index.css
+          cat > src/index.css << 'EOF'
+          @tailwind base;
+          @tailwind components;
+          @tailwind utilities;
+
+          @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+          }
+
+          @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+          }
+
+          @keyframes slideLeft {
+            from { transform: translateX(20px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+          }
+
+          @keyframes slideRight {
+            from { transform: translateX(-20px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+          }
+
+          @keyframes scaleIn {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+          }
+
+          body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+              'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+              sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+          }
+          EOF
+
+          # Copy presentation component
+          cp ../docs/smart_support_presentation.tsx src/Presentation.jsx
+
+          # Create src/main.jsx
+          cat > src/main.jsx << 'EOF'
+          import React from 'react'
+          import ReactDOM from 'react-dom/client'
+          import Presentation from './Presentation.jsx'
+          import './index.css'
+
+          ReactDOM.createRoot(document.getElementById('root')).render(
+            <React.StrictMode>
+              <Presentation />
+            </React.StrictMode>,
+          )
+          EOF
+
+      - name: Install dependencies
+        run: |
+          cd presentation
+          npm ci
+
+      - name: Build presentation
+        run: |
+          cd presentation
+          npm run build
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./presentation/dist
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
