@@ -89,6 +89,13 @@ docker-compose.override.yml
 screenshots/
 test-results/
 
+# Node.js / Frontend
+node_modules/
+frontend/dist/
+frontend/build/
+frontend/*.log
+frontend/coverage/
+
 # Project-specific
 docs/*.pdf
 *.tmp

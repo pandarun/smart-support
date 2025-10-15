@@ -1,0 +1,326 @@
+openapi: 3.0.3
+info:
+  title: Smart Support Classification API
+  version: 1.0.0
+  description: |
+    REST API for customer inquiry classification.
+
+    Wraps the existing Classification Module with FastAPI HTTP endpoints.
+    Performance requirement: <2 seconds response time (95th percentile).
+  contact:
+    name: Smart Support Team
+    url: https://github.com/pandarun/smart-support
+
+servers:
+  - url: http://localhost:8000
+    description: Local development server
+  - url: http://localhost:8000/api
+    description: Local development (with /api prefix)
+
+tags:
+  - name: classification
+    description: Inquiry classification operations
+  - name: health
+    description: Service health checks
+
+paths:
+  /api/classify:
+    post:
+      summary: Classify customer inquiry
+      description: |
+        Classifies a Russian-language customer inquiry into product category and subcategory.
+
+        **Performance**: Must complete within 2 seconds (95th percentile - FR-015).
+        **Accuracy**: ≥70% accuracy on validation dataset (QR-001 from constitution).
+      operationId: classifyInquiry
+      tags:
+        - classification
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClassificationRequest'
+            examples:
+              savings_account:
+                summary: Savings account inquiry
+                value:
+                  inquiry: "Как открыть накопительный счет в мобильном приложении?"
+              password_reset:
+                summary: Password reset inquiry
+                value:
+                  inquiry: "Забыл пароль от мобильного банка"
+      responses:
+        '200':
+          description: Successful classification
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClassificationResult'
+              examples:
+                high_confidence:
+                  summary: High confidence classification
+                  value:
+                    inquiry: "Как открыть накопительный счет в мобильном приложении?"
+                    category: "Счета и вклады"
+                    subcategory: "Открытие счета"
+                    confidence: 0.89
+                    processing_time_ms: 1247
+                    timestamp: "2025-10-15T10:30:45Z"
+                medium_confidence:
+                  summary: Medium confidence classification
+                  value:
+                    inquiry: "Забыл пароль от мобильного банка"
+                    category: "Техническая поддержка"
+                    subcategory: "Проблемы и решения"
+                    confidence: 0.67
+                    processing_time_ms: 1523
+                    timestamp: "2025-10-15T10:31:12Z"
+        '400':
+          description: Validation error (invalid input)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                no_cyrillic:
+                  summary: No Russian text
+                  value:
+                    error: "Please enter inquiry in Russian (at least 5 characters)"
+                    error_type: "validation"
+                    timestamp: "2025-10-15T10:35:22Z"
+                too_short:
+                  summary: Too short
+                  value:
+                    error: "Inquiry must be at least 5 characters"
+                    error_type: "validation"
+                    timestamp: "2025-10-15T10:35:30Z"
+        '503':
+          description: Service unavailable (Scibox API error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                service_down:
+                  summary: Classification service unavailable
+                  value:
+                    error: "Unable to connect to classification service. Please check your connection and try again."
+                    error_type: "api_error"
+                    details: "Connection timeout to Scibox API"
+                    timestamp: "2025-10-15T10:40:15Z"
+        '504':
+          description: Gateway timeout (>2s response time)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                timeout:
+                  summary: Classification timeout
+                  value:
+                    error: "The classification service is taking longer than expected. Please try again."
+                    error_type: "timeout"
+                    timestamp: "2025-10-15T10:42:33Z"
+
+  /api/health:
+    get:
+      summary: Health check
+      description: |
+        Check if classification service is operational.
+
+        Used by frontend to detect service availability before submitting inquiries.
+      operationId: healthCheck
+      tags:
+        - health
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+              examples:
+                healthy:
+                  summary: All systems operational
+                  value:
+                    status: "healthy"
+                    classification_available: true
+                    retrieval_available: true
+                    embeddings_count: 201
+        '503':
+          description: Service is unhealthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+              examples:
+                classification_down:
+                  summary: Classification service unavailable
+                  value:
+                    status: "unhealthy"
+                    classification_available: false
+                    retrieval_available: true
+                    embeddings_count: 201
+
+components:
+  schemas:
+    ClassificationRequest:
+      type: object
+      required:
+        - inquiry
+      properties:
+        inquiry:
+          type: string
+          minLength: 5
+          maxLength: 5000
+          description: Customer inquiry text in Russian (must contain Cyrillic characters)
+          example: "Как открыть накопительный счет в мобильном приложении?"
+      description: |
+        Input model for classification endpoint.
+
+        **Validation Rules** (FR-018):
+        - VR-001: Text stripped of leading/trailing whitespace
+        - VR-002: Must contain at least one Cyrillic character (Russian language)
+        - VR-003: Minimum 5 characters, maximum 5000 characters
+
+    ClassificationResult:
+      type: object
+      required:
+        - inquiry
+        - category
+        - subcategory
+        - confidence
+        - processing_time_ms
+        - timestamp
+      properties:
+        inquiry:
+          type: string
+          description: Original inquiry text (echoed back for reference)
+          example: "Как открыть накопительный счет в мобильном приложении?"
+        category:
+          type: string
+          description: |
+            Top-level product category (one of 6 valid categories).
+
+            Valid categories:
+            - Новые клиенты
+            - Продукты - Вклады
+            - Продукты - Карты
+            - Продукты - Кредиты
+            - Техническая поддержка
+            - Частные клиенты
+          example: "Счета и вклады"
+        subcategory:
+          type: string
+          description: Second-level classification within category (35 total subcategories)
+          example: "Открытие счета"
+        confidence:
+          type: number
+          format: float
+          minimum: 0.0
+          maximum: 1.0
+          description: |
+            Classification confidence score (0.0 to 1.0).
+
+            **Visual Indicators** (FR-010):
+            - High: ≥0.8 (green)
+            - Medium: 0.6-0.8 (yellow)
+            - Low: <0.6 (red)
+          example: 0.89
+        processing_time_ms:
+          type: integer
+          minimum: 1
+          description: Time taken for classification in milliseconds (must be <2000 for FR-015)
+          example: 1247
+        timestamp:
+          type: string
+          format: date-time
+          description: When classification was performed (ISO 8601 UTC)
+          example: "2025-10-15T10:30:45Z"
+      description: |
+        Classification result with category, subcategory, and confidence.
+
+        **Requirement Mapping**:
+        - FR-002: Display classification results
+        - FR-010: Visual confidence indicators
+        - FR-013: Processing time display
+        - FR-015: <2 seconds performance requirement
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+        - error_type
+        - timestamp
+      properties:
+        error:
+          type: string
+          description: |
+            Human-readable, user-actionable error message (VR-017).
+            No technical jargon or stack traces.
+          example: "Unable to connect to classification service. Please check your connection and try again."
+        error_type:
+          type: string
+          enum:
+            - validation
+            - api_error
+            - timeout
+            - unknown
+          description: |
+            Error category for frontend handling.
+
+            - validation: Input validation failed (400)
+            - api_error: Service unavailable (503)
+            - timeout: Request exceeded time limit (504)
+            - unknown: Unexpected server error (500)
+          example: "api_error"
+        details:
+          type: string
+          description: Technical details for logging (optional, not shown to user)
+          example: "Connection timeout after 5000ms to Scibox API"
+        timestamp:
+          type: string
+          format: date-time
+          description: When error occurred (ISO 8601 UTC)
+          example: "2025-10-15T10:35:22Z"
+      description: |
+        Standardized error response format.
+
+        **Requirement Mapping**:
+        - FR-018: Validation error handling
+        - FR-019: Classification service error handling
+        - FR-021: Network timeout handling
+        - FR-022: Actionable error guidance
+
+    HealthResponse:
+      type: object
+      required:
+        - status
+        - classification_available
+        - retrieval_available
+        - embeddings_count
+      properties:
+        status:
+          type: string
+          enum:
+            - healthy
+            - unhealthy
+          description: Overall system health status
+          example: "healthy"
+        classification_available:
+          type: boolean
+          description: Whether classification service can handle requests
+          example: true
+        retrieval_available:
+          type: boolean
+          description: Whether retrieval service can handle requests
+          example: true
+        embeddings_count:
+          type: integer
+          description: Number of FAQ templates in embeddings database
+          example: 201
+      description: |
+        Health check response for service monitoring.
+
+        Used by frontend to detect service availability before showing error messages.
