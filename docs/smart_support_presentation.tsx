@@ -269,10 +269,11 @@ const Presentation = () => {
             </div>
           </div>
           
-          <div className="mt-8 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-lg overflow-hidden shadow-2xl">
+          <div className="mt-8 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-lg overflow-hidden shadow-2xl" style={{ maxHeight: '280px' }}>
             <video
               controls
               className="w-full"
+              style={{ maxHeight: '280px', objectFit: 'contain' }}
               poster="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1920 1080'%3E%3Crect fill='%234f46e5' width='1920' height='1080'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='white' font-size='48' font-family='sans-serif'%3EClick to Play Demo%3C/text%3E%3C/svg%3E"
             >
               <source
