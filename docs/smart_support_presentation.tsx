@@ -200,10 +200,10 @@ const Presentation = () => {
     {
       title: "Live Demo",
       content: (
-        <div className="p-12 bg-gradient-to-br from-indigo-50 to-purple-50 h-full">
-          <h2 className="text-5xl font-bold mb-8 text-indigo-800">6-Step Workflow</h2>
-          
-          <div className="grid grid-cols-2 gap-6">
+        <div className="p-4 pb-20 md:p-12 md:pb-12 bg-gradient-to-br from-indigo-50 to-purple-50 h-full overflow-y-auto">
+          <h2 className="text-2xl md:text-5xl font-bold mb-4 md:mb-8 text-indigo-800">6-Step Workflow</h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-6">
             <div className="space-y-4">
               <div className="bg-white rounded-lg p-4 shadow">
                 <div className="flex items-center space-x-3">
@@ -269,12 +269,15 @@ const Presentation = () => {
             </div>
           </div>
           
-          <div className="mt-8 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-lg overflow-hidden shadow-2xl" style={{ maxHeight: '280px' }}>
+          <div className="mt-4 md:mt-8 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-lg overflow-hidden shadow-2xl" style={{ maxHeight: '280px' }}>
             <video
               controls
+              controlsList="nodownload"
+              playsInline
               className="w-full"
               style={{ maxHeight: '280px', objectFit: 'contain' }}
               poster="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1920 1080'%3E%3Crect fill='%234f46e5' width='1920' height='1080'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='white' font-size='48' font-family='sans-serif'%3EClick to Play Demo%3C/text%3E%3C/svg%3E"
+              preload="metadata"
             >
               <source
                 src="https://github.com/pandarun/smart-support/releases/download/v1.0.0/minsk_hackaton.mp4"
@@ -282,16 +285,16 @@ const Presentation = () => {
               />
               Your browser does not support the video tag.
             </video>
-            <div className="bg-indigo-700 px-6 py-3 flex items-center justify-between">
+            <div className="bg-indigo-700 px-3 py-2 md:px-6 md:py-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
               <div>
-                <div className="font-semibold">Live Demo: Smart Support in Action</div>
-                <div className="text-sm text-indigo-200">Full 6-step workflow demonstration</div>
+                <div className="font-semibold text-sm md:text-base">Live Demo: Smart Support in Action</div>
+                <div className="text-xs md:text-sm text-indigo-200">Full 6-step workflow demonstration</div>
               </div>
               <a
                 href="https://github.com/pandarun/smart-support/releases/download/v1.0.0/minsk_hackaton.mp4"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-sm underline hover:text-indigo-200"
+                className="text-xs md:text-sm underline hover:text-indigo-200 whitespace-nowrap"
               >
                 Download Video
               </a>
@@ -695,54 +698,54 @@ const Presentation = () => {
   }, [currentSlide, isAnimating]);
 
   return (
-    <div className="w-full h-screen bg-gray-900 text-gray-800 overflow-hidden relative">
+    <div className="w-full h-screen bg-gray-900 text-gray-800 overflow-hidden relative touch-pan-y">
       {/* Slide Content */}
-      <div className="w-full h-full">
+      <div className="w-full h-full overflow-hidden">
         {slides[currentSlide].content}
       </div>
       
       {/* Navigation */}
-      <div className="absolute bottom-8 left-0 right-0 flex items-center justify-center space-x-4">
+      <div className="absolute bottom-4 md:bottom-8 left-0 right-0 flex items-center justify-center space-x-2 md:space-x-4 z-50 px-4">
         <button
           onClick={prevSlide}
           disabled={currentSlide === 0}
-          className={`p-3 rounded-full bg-black/20 backdrop-blur transition-all ${
-            currentSlide === 0 ? 'opacity-30 cursor-not-allowed' : 'hover:bg-black/30'
+          className={`p-2 md:p-3 rounded-full bg-black/30 backdrop-blur transition-all ${
+            currentSlide === 0 ? 'opacity-30 cursor-not-allowed' : 'hover:bg-black/40 active:bg-black/50'
           }`}
         >
-          <ChevronLeft className="w-6 h-6 text-white" />
+          <ChevronLeft className="w-5 h-5 md:w-6 md:h-6 text-white" />
         </button>
-        
+
         {/* Slide Indicators */}
-        <div className="flex space-x-2">
+        <div className="flex space-x-1 md:space-x-2">
           {slides.map((_, index) => (
             <div
               key={index}
-              className={`w-2 h-2 rounded-full transition-all ${
-                index === currentSlide ? 'w-8 bg-white' : 'bg-white/40'
+              className={`w-1.5 h-1.5 md:w-2 md:h-2 rounded-full transition-all ${
+                index === currentSlide ? 'w-6 md:w-8 bg-white' : 'bg-white/40'
               }`}
             />
           ))}
         </div>
-        
+
         <button
           onClick={nextSlide}
           disabled={currentSlide === slides.length - 1}
-          className={`p-3 rounded-full bg-black/20 backdrop-blur transition-all ${
-            currentSlide === slides.length - 1 ? 'opacity-30 cursor-not-allowed' : 'hover:bg-black/30'
+          className={`p-2 md:p-3 rounded-full bg-black/30 backdrop-blur transition-all ${
+            currentSlide === slides.length - 1 ? 'opacity-30 cursor-not-allowed' : 'hover:bg-black/40 active:bg-black/50'
           }`}
         >
-          <ChevronRight className="w-6 h-6 text-white" />
+          <ChevronRight className="w-5 h-5 md:w-6 md:h-6 text-white" />
         </button>
       </div>
-      
+
       {/* Slide Counter */}
-      <div className="absolute top-8 right-8 text-white/60 text-sm">
+      <div className="absolute top-2 md:top-8 right-2 md:right-8 text-white/60 text-xs md:text-sm bg-black/20 backdrop-blur px-2 py-1 rounded z-40">
         {currentSlide + 1} / {slides.length}
       </div>
-      
-      {/* Keyboard Hint */}
-      <div className="absolute top-8 left-8 text-white/60 text-sm">
+
+      {/* Keyboard Hint - Hidden on mobile */}
+      <div className="hidden md:block absolute top-8 left-8 text-white/60 text-sm bg-black/20 backdrop-blur px-3 py-1 rounded">
         Use ← → or Space to navigate
       </div>
     </div>
