@@ -269,10 +269,32 @@ const Presentation = () => {
             </div>
           </div>
           
-          <div className="mt-8 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg p-6 text-center">
-            <Play className="w-12 h-12 mx-auto mb-3" />
-            <div className="text-2xl font-bold">Watch Live Demo Video</div>
-            <div className="text-sm mt-2">docs/minsk_hackaton.mp4</div>
+          <div className="mt-8 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-lg overflow-hidden shadow-2xl">
+            <video
+              controls
+              className="w-full"
+              poster="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1920 1080'%3E%3Crect fill='%234f46e5' width='1920' height='1080'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='white' font-size='48' font-family='sans-serif'%3EClick to Play Demo%3C/text%3E%3C/svg%3E"
+            >
+              <source
+                src="https://github.com/pandarun/smart-support/releases/download/v1.0.0/minsk_hackaton.mp4"
+                type="video/mp4"
+              />
+              Your browser does not support the video tag.
+            </video>
+            <div className="bg-indigo-700 px-6 py-3 flex items-center justify-between">
+              <div>
+                <div className="font-semibold">Live Demo: Smart Support in Action</div>
+                <div className="text-sm text-indigo-200">Full 6-step workflow demonstration</div>
+              </div>
+              <a
+                href="https://github.com/pandarun/smart-support/releases/download/v1.0.0/minsk_hackaton.mp4"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm underline hover:text-indigo-200"
+              >
+                Download Video
+              </a>
+            </div>
           </div>
         </div>
       )
