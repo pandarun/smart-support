@@ -181,7 +181,7 @@ jobs:
       - name: Install dependencies
         run: |
           cd presentation
-          npm ci
+          npm install
 
       - name: Build presentation
         run: |
