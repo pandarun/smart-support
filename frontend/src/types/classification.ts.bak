@@ -1,0 +1,107 @@
+/**
+ * TypeScript Type Definitions for Classification API
+ *
+ * Mirrors backend/src/api/models.py ClassificationRequest and ClassificationResult.
+ * Used for type-safe API communication and frontend data handling.
+ *
+ * Constitution Compliance:
+ * - Principle I: Modular Architecture (mirrors backend models exactly)
+ * - Principle IV: API-First Integration (enables type-safe API calls)
+ */
+
+/**
+ * Request payload for POST /api/classify
+ *
+ * Validates customer inquiry text before classification.
+ */
+export interface ClassificationRequest {
+  /**
+   * Customer inquiry text in Russian
+   * Must be 5-5000 characters and contain at least one Cyrillic character
+   */
+  inquiry: string;
+}
+
+/**
+ * Response from POST /api/classify
+ *
+ * Contains classification results with category, subcategory, and confidence.
+ */
+export interface ClassificationResult {
+  /** Original inquiry text (echoed back) */
+  inquiry: string;
+
+  /** Top-level product category */
+  category: string;
+
+  /** Second-level classification */
+  subcategory: string;
+
+  /** Classification confidence (0.0-1.0) */
+  confidence: number;
+
+  /** Processing time in milliseconds */
+  processing_time_ms: number;
+
+  /** When classification was performed (ISO 8601 UTC) */
+  timestamp: string;
+}
+
+/**
+ * Standard error response format
+ *
+ * Used for all API failures (validation, service errors, timeouts).
+ */
+export interface ErrorResponse {
+  /** User-friendly, actionable error message (no technical jargon) */
+  error: string;
+
+  /** Error category for frontend handling */
+  error_type: 'validation' | 'api_error' | 'timeout' | 'unknown';
+
+  /** Technical details for logging (not shown to user) */
+  details?: string;
+
+  /** When error occurred (ISO 8601 UTC) */
+  timestamp: string;
+}
+
+/**
+ * Type guard to check if an error response is an ErrorResponse
+ */
+export function isErrorResponse(obj: unknown): obj is ErrorResponse {
+  return (
+    typeof obj === 'object' &&
+    obj !== null &&
+    'error' in obj &&
+    'error_type' in obj &&
+    typeof (obj as ErrorResponse).error === 'string' &&
+    ['validation', 'api_error', 'timeout', 'unknown'].includes((obj as ErrorResponse).error_type)
+  );
+}
+
+/**
+ * Validation helper: Check if inquiry text meets requirements
+ *
+ * @param inquiry - Text to validate
+ * @returns Error message if invalid, null if valid
+ */
+export function validateInquiry(inquiry: string): string | null {
+  const trimmed = inquiry.trim();
+
+  if (trimmed.length < 5) {
+    return "Inquiry must be at least 5 characters";
+  }
+
+  if (trimmed.length > 5000) {
+    return "Inquiry must not exceed 5000 characters";
+  }
+
+  // Check for at least one Cyrillic character (Russian)
+  const hasCyrillic = /[а-яА-ЯёЁ]/.test(trimmed);
+  if (!hasCyrillic) {
+    return "Please enter inquiry in Russian (Cyrillic characters required)";
+  }
+
+  return null; // Valid
+}

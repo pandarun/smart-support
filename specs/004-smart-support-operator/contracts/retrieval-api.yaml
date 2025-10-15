@@ -1,0 +1,408 @@
+openapi: 3.0.3
+info:
+  title: Smart Support Retrieval API
+  version: 1.0.0
+  description: |
+    REST API for template response retrieval.
+
+    Wraps the existing Retrieval Module with FastAPI HTTP endpoints.
+    Performance requirement: <1 second response time (95th percentile).
+  contact:
+    name: Smart Support Team
+    url: https://github.com/pandarun/smart-support
+
+servers:
+  - url: http://localhost:8000
+    description: Local development server
+  - url: http://localhost:8000/api
+    description: Local development (with /api prefix)
+
+tags:
+  - name: retrieval
+    description: Template retrieval operations
+
+paths:
+  /api/retrieve:
+    post:
+      summary: Retrieve ranked template responses
+      description: |
+        Retrieves and ranks FAQ template responses based on customer inquiry and classification.
+
+        **Performance**: Must complete within 1 second (95th percentile - FR-016).
+        **Accuracy**: ≥80% top-3 accuracy on validation dataset (QR-002 from constitution).
+
+        **Workflow**: Automatically triggered after classification (FR-003).
+      operationId: retrieveTemplates
+      tags:
+        - retrieval
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RetrievalRequest'
+            examples:
+              savings_account:
+                summary: Savings account inquiry
+                value:
+                  query: "Как открыть накопительный счет в мобильном приложении?"
+                  category: "Счета и вклады"
+                  subcategory: "Открытие счета"
+                  classification_confidence: 0.89
+                  top_k: 5
+              password_reset:
+                summary: Password reset inquiry
+                value:
+                  query: "Забыл пароль от мобильного банка"
+                  category: "Техническая поддержка"
+                  subcategory: "Проблемы и решения"
+                  classification_confidence: 0.67
+                  top_k: 5
+      responses:
+        '200':
+          description: Successful retrieval with ranked templates
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RetrievalResponse'
+              examples:
+                high_similarity:
+                  summary: High similarity matches found
+                  value:
+                    query: "Как открыть накопительный счет в мобильном приложении?"
+                    category: "Счета и вклады"
+                    subcategory: "Открытие счета"
+                    results:
+                      - template_id: "tmpl_savings_001"
+                        template_question: "Как открыть накопительный счет через мобильное приложение?"
+                        template_answer: "Для открытия накопительного счета в мобильном приложении: 1) Войдите в приложение ВТБ..."
+                        category: "Счета и вклады"
+                        subcategory: "Открытие счета"
+                        similarity_score: 0.892
+                        combined_score: 0.892
+                        rank: 1
+                      - template_id: "tmpl_savings_002"
+                        template_question: "Какие документы нужны для открытия счета физическому лицу?"
+                        template_answer: "Для открытия счета вам потребуется: паспорт, идентификационный номер..."
+                        category: "Счета и вклады"
+                        subcategory: "Открытие счета"
+                        similarity_score: 0.856
+                        combined_score: 0.856
+                        rank: 2
+                    total_candidates: 12
+                    processing_time_ms: 487.3
+                    timestamp: "2025-10-15T10:30:46Z"
+                    warnings: []
+                low_similarity:
+                  summary: Low similarity matches (warning)
+                  value:
+                    query: "Забыл пароль от мобильного банка"
+                    category: "Техническая поддержка"
+                    subcategory: "Проблемы и решения"
+                    results:
+                      - template_id: "tmpl_tech_001"
+                        template_question: "Как восстановить пароль в мобильном приложении?"
+                        template_answer: "Для восстановления пароля: 1) Нажмите 'Забыли пароль?' на экране входа..."
+                        category: "Техническая поддержка"
+                        subcategory: "Проблемы и решения"
+                        similarity_score: 0.42
+                        combined_score: 0.42
+                        rank: 1
+                    total_candidates: 3
+                    processing_time_ms: 312.1
+                    timestamp: "2025-10-15T10:31:15Z"
+                    warnings:
+                      - "Low confidence matches - all scores < 0.5"
+                no_templates:
+                  summary: No templates found in category
+                  value:
+                    query: "Как открыть счет?"
+                    category: "Неизвестная категория"
+                    subcategory: "Неизвестная подкатегория"
+                    results: []
+                    total_candidates: 0
+                    processing_time_ms: 45.2
+                    timestamp: "2025-10-15T10:32:05Z"
+                    warnings:
+                      - "No templates found in category 'Неизвестная категория' > 'Неизвестная подкатегория'"
+        '400':
+          description: Validation error (invalid category or query)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalid_category:
+                  summary: Invalid category
+                  value:
+                    error: "Category 'Invalid' does not exist in FAQ database"
+                    error_type: "validation"
+                    timestamp: "2025-10-15T10:33:12Z"
+                no_cyrillic:
+                  summary: No Russian text in query
+                  value:
+                    error: "Query must contain at least one Cyrillic character"
+                    error_type: "validation"
+                    timestamp: "2025-10-15T10:33:25Z"
+        '503':
+          description: Service unavailable (embedding service error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                service_down:
+                  summary: Retrieval service unavailable
+                  value:
+                    error: "Unable to connect to retrieval service. Please check your connection and try again."
+                    error_type: "api_error"
+                    details: "Scibox embeddings API connection failed"
+                    timestamp: "2025-10-15T10:35:45Z"
+        '504':
+          description: Gateway timeout (>1s response time)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                timeout:
+                  summary: Retrieval timeout
+                  value:
+                    error: "The retrieval service is taking longer than expected. Please try again."
+                    error_type: "timeout"
+                    timestamp: "2025-10-15T10:36:20Z"
+
+components:
+  schemas:
+    RetrievalRequest:
+      type: object
+      required:
+        - query
+        - category
+        - subcategory
+      properties:
+        query:
+          type: string
+          minLength: 5
+          maxLength: 5000
+          description: Customer inquiry text in Russian (must match classified inquiry)
+          example: "Как открыть накопительный счет в мобильном приложении?"
+        category:
+          type: string
+          description: Category from classification (must exist in FAQ database)
+          example: "Счета и вклады"
+        subcategory:
+          type: string
+          description: Subcategory from classification (must match category)
+          example: "Открытие счета"
+        classification_confidence:
+          type: number
+          format: float
+          minimum: 0.0
+          maximum: 1.0
+          description: Confidence score from classification (optional, informational only)
+          example: 0.89
+        top_k:
+          type: integer
+          minimum: 1
+          maximum: 10
+          default: 5
+          description: Number of templates to return (default: 5 per FR-005)
+          example: 5
+        use_historical_weighting:
+          type: boolean
+          default: false
+          description: Enable weighted scoring with historical success rates (not used in MVP)
+          example: false
+      description: |
+        Input model for retrieval endpoint.
+
+        **Construction**: Automatically built from ClassificationResult (FR-003).
+        **Validation Rules**:
+        - VR-008: Query must match inquiry from classification
+        - VR-009: Category/subcategory must match classification result
+        - VR-010: top_k clamped to 1-10 range
+
+    TemplateResult:
+      type: object
+      required:
+        - template_id
+        - template_question
+        - template_answer
+        - category
+        - subcategory
+        - similarity_score
+        - combined_score
+        - rank
+      properties:
+        template_id:
+          type: string
+          description: Unique template identifier
+          example: "tmpl_savings_001"
+        template_question:
+          type: string
+          description: FAQ question text (denormalized for UI display)
+          example: "Как открыть накопительный счет через мобильное приложение?"
+        template_answer:
+          type: string
+          description: FAQ answer text (denormalized for UI display, copy-to-clipboard)
+          example: "Для открытия накопительного счета в мобильном приложении: 1) Войдите в приложение ВТБ..."
+        category:
+          type: string
+          description: Template category (denormalized for UI)
+          example: "Счета и вклады"
+        subcategory:
+          type: string
+          description: Template subcategory (denormalized for UI)
+          example: "Открытие счета"
+        similarity_score:
+          type: number
+          format: float
+          minimum: 0.0
+          maximum: 1.0
+          description: |
+            Cosine similarity between query and template (0.0 to 1.0).
+
+            **Visual Indicators** (FR-011):
+            - High: ≥0.7 (green)
+            - Medium: 0.5-0.7 (yellow)
+            - Low: <0.5 (red)
+          example: 0.892
+        combined_score:
+          type: number
+          format: float
+          minimum: 0.0
+          maximum: 1.0
+          description: Final ranking score (same as similarity_score for MVP)
+          example: 0.892
+        rank:
+          type: integer
+          minimum: 1
+          description: Position in result list (1 = best match, sorted ascending)
+          example: 1
+      description: |
+        Single retrieved template with ranking metadata.
+
+        **Requirement Mapping**:
+        - FR-004: Ranked templates by relevance
+        - FR-005: Top 5 templates with question, answer, similarity score
+        - FR-006: template_answer used for copy-to-clipboard
+        - FR-007: template_answer editable before copy
+        - FR-011: Visual similarity indicators
+
+    RetrievalResponse:
+      type: object
+      required:
+        - query
+        - category
+        - subcategory
+        - results
+        - total_candidates
+        - processing_time_ms
+        - timestamp
+        - warnings
+      properties:
+        query:
+          type: string
+          description: Original inquiry (echoed back for reference)
+          example: "Как открыть накопительный счет в мобильном приложении?"
+        category:
+          type: string
+          description: Category used for filtering (echoed back)
+          example: "Счета и вклады"
+        subcategory:
+          type: string
+          description: Subcategory used for filtering (echoed back)
+          example: "Открытие счета"
+        results:
+          type: array
+          maxItems: 10
+          items:
+            $ref: '#/components/schemas/TemplateResult'
+          description: |
+            Ranked template results (0 to top_k items).
+
+            **Validation** (VR-014): Must be sorted by rank ascending (1, 2, 3, ...).
+        total_candidates:
+          type: integer
+          minimum: 0
+          description: Number of templates in category before ranking (informational)
+          example: 12
+        processing_time_ms:
+          type: number
+          format: float
+          minimum: 0.0
+          description: Time to embed query + rank templates in milliseconds (must be <1000 for FR-016)
+          example: 487.3
+        timestamp:
+          type: string
+          format: date-time
+          description: When retrieval completed (ISO 8601 UTC)
+          example: "2025-10-15T10:30:46Z"
+        warnings:
+          type: array
+          items:
+            type: string
+          description: |
+            Warnings about retrieval quality (empty if no issues).
+
+            **Possible Warnings**:
+            - "No templates found in category '...' > '...'" (VR-015)
+            - "Low confidence matches - all scores < 0.5"
+            - "Very low top score (...) - may not be relevant"
+            - "Slow retrieval: ...ms (target: <1000ms)"
+          example: []
+      description: |
+        Complete retrieval result with ranked templates and metadata.
+
+        **Requirement Mapping**:
+        - FR-003: Auto-triggered after classification
+        - FR-004: Ranked by relevance (similarity_score)
+        - FR-005: Top 5 templates with metadata
+        - FR-014: Processing time display
+        - FR-016: <1 second performance requirement
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+        - error_type
+        - timestamp
+      properties:
+        error:
+          type: string
+          description: |
+            Human-readable, user-actionable error message (VR-017).
+            No technical jargon or stack traces.
+          example: "Unable to connect to retrieval service. Please check your connection and try again."
+        error_type:
+          type: string
+          enum:
+            - validation
+            - api_error
+            - timeout
+            - unknown
+          description: |
+            Error category for frontend handling.
+
+            - validation: Input validation failed (400)
+            - api_error: Service unavailable (503)
+            - timeout: Request exceeded time limit (504)
+            - unknown: Unexpected server error (500)
+          example: "api_error"
+        details:
+          type: string
+          description: Technical details for logging (optional, not shown to user)
+          example: "Scibox embeddings API connection timeout"
+        timestamp:
+          type: string
+          format: date-time
+          description: When error occurred (ISO 8601 UTC)
+          example: "2025-10-15T10:35:45Z"
+      description: |
+        Standardized error response format.
+
+        **Requirement Mapping**:
+        - FR-020: Retrieval service error handling
+        - FR-021: Network timeout handling
+        - FR-022: Actionable error guidance
