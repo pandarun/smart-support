@@ -1,0 +1,80 @@
+# Version control
+.git/
+.gitignore
+.gitattributes
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+.venv/
+.ENV/
+virtualenv/
+
+# Testing
+.pytest_cache/
+.tox/
+.coverage
+.coverage.*
+htmlcov/
+.hypothesis/
+coverage.xml
+*.cover
+test_scibox_api.py
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Project specific
+.env
+.env.local
+.env.*.local
+tests/
+specs/
+*.md
+!README.md
+docs/*.pdf
+*.tmp
+.cache/
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pyre/
+.pytype/
+
+# Frontend (excluded from backend build)
+frontend/
+
+# Docker
+Dockerfile
+.dockerignore
+docker-compose*.yml
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+.travis.yml
+
+# Documentation build
+docs/_build/
+site/
+
+# Logs
+*.log
+logs/
+*.log.*
+
+# Build artifacts
+dist/
+build/
+*.egg-info/
+wheels/

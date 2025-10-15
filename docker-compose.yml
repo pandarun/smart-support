@@ -1,36 +1,45 @@
 version: '3.8'
 
 services:
-  # Classification Module Service
-  classification:
+  # Backend API Service
+  backend:
     build:
       context: .
-      dockerfile: Dockerfile
-    image: smart-support:latest
-    container_name: smart-support-classification
-
-    # Environment variables
+      dockerfile: backend/Dockerfile
+    container_name: smart-support-backend
+    image: smart-support-backend:latest
     environment:
+      # Scibox API credentials (set via .env file or override)
       - SCIBOX_API_KEY=${SCIBOX_API_KEY}
-      - FAQ_PATH=/app/docs/smart_support_vtb_belarus_faq_final.xlsx
-      - LOG_LEVEL=${LOG_LEVEL:-INFO}
-      - API_TIMEOUT=${API_TIMEOUT:-1.8}
+      - API_TIMEOUT=${API_TIMEOUT:-20}
+      - API_MAX_RETRIES=${API_MAX_RETRIES:-3}
 
-    # Mount .env file
+      # Storage backend
+      - STORAGE_BACKEND=${STORAGE_BACKEND:-sqlite}
+      - DATABASE_URL=${DATABASE_URL:-sqlite:///data/embeddings.db}
+
+      # Python environment
+      - PYTHONUNBUFFERED=1
+      - PYTHONPATH=/app:/app/backend
+    ports:
+      - "8000:8000"
+    volumes:
+      # Persist embeddings database
+      - embeddings-data:/app/data
+      # Development: mount source code for hot reload (comment out for production)
+      # - ./src:/app/src
+      # - ./backend/src:/app/backend/src
     env_file:
       - .env
-
-    # Volume mounts for development
-    volumes:
-      - ./data/validation:/app/data/validation:ro
-      - ./data/results:/app/data/results:rw
-      - ./docs:/app/docs:ro
-
-    # Network
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health').read()"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
     networks:
       - smart-support-network
-
-    # Resource limits
     deploy:
       resources:
         limits:
@@ -40,124 +49,40 @@ services:
           cpus: '0.5'
           memory: 512M
 
-    # Restart policy
-    restart: unless-stopped
-
-    # Health check
+  # Frontend UI Service
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: smart-support-frontend
+    image: smart-support-frontend:latest
+    ports:
+      - "3000:80"
+    depends_on:
+      backend:
+        condition: service_healthy
     healthcheck:
-      test: ["CMD", "python", "-c", "from src.classification.faq_parser import get_faq_parser; get_faq_parser()"]
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:80/"]
       interval: 30s
-      timeout: 5s
+      timeout: 3s
       retries: 3
       start_period: 10s
-
-    # Default command (can override)
-    # Example: docker-compose run classification "Как открыть счет?"
-    command: ["-m", "src.cli.classify", "--help"]
-
-  # Template Retrieval Module Service
-  retrieval:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: smart-support:latest
-    container_name: smart-support-retrieval
-
-    # Environment variables
-    environment:
-      - SCIBOX_API_KEY=${SCIBOX_API_KEY}
-      - FAQ_PATH=/app/docs/smart_support_vtb_belarus_faq_final.xlsx
-      - LOG_LEVEL=${LOG_LEVEL:-INFO}
-      - EMBEDDING_MODEL=${EMBEDDING_MODEL:-bge-m3}
-      - RETRIEVAL_TOP_K=${RETRIEVAL_TOP_K:-5}
-      - RETRIEVAL_TIMEOUT_SECONDS=${RETRIEVAL_TIMEOUT_SECONDS:-1.0}
-      # Persistent storage configuration
-      - STORAGE_BACKEND=${STORAGE_BACKEND:-sqlite}
-      - SQLITE_DB_PATH=/app/data/embeddings.db
-      # PostgreSQL configuration (if STORAGE_BACKEND=postgres)
-      # - POSTGRES_HOST=postgres
-      # - POSTGRES_PORT=5432
-      # - POSTGRES_DATABASE=smart_support
-      # - POSTGRES_USER=postgres
-      # - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-
-    # Mount .env file
-    env_file:
-      - .env
-
-    # Volume mounts for development
-    volumes:
-      - ./data/validation:/app/data/validation:ro
-      - ./data/results:/app/data/results:rw
-      - ./docs:/app/docs:ro
-      # Persistent storage: Mount data directory for embeddings.db
-      - ./data:/app/data:rw
-
-    # Network
+    restart: unless-stopped
     networks:
       - smart-support-network
-
-    # Resource limits (slightly more memory for embedding cache)
     deploy:
       resources:
         limits:
-          cpus: '2.0'
-          memory: 2.5G
-        reservations:
-          cpus: '0.5'
+          cpus: '1.0'
           memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
 
-    # Restart policy
-    restart: unless-stopped
-
-    # Health check
-    healthcheck:
-      test: ["CMD", "python", "-c", "from src.classification.faq_parser import get_faq_parser; get_faq_parser()"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
-      start_period: 60s  # Longer startup due to embedding precomputation
-
-    # Default command (can override)
-    # Example: docker-compose run retrieval "Как открыть счет?" --category "Счета и вклады" --subcategory "Открытие счета"
-    command: ["-m", "src.cli.retrieve", "--help"]
-
-  # Future: Operator Web UI Service
-  # operator-ui:
-  #   build:
-  #     context: ./ui
-  #   ports:
-  #     - "8080:8080"
-  #   environment:
-  #     - CLASSIFICATION_SERVICE=classification:5000
-  #     - RETRIEVAL_SERVICE=retrieval:5001
-  #   depends_on:
-  #     - classification
-  #     - retrieval
-
-  # Optional: PostgreSQL with pg_vector extension
-  # Uncomment to use PostgreSQL backend instead of SQLite
-  # postgres:
-  #   image: ankane/pgvector:latest
-  #   container_name: smart-support-postgres
-  #   environment:
-  #     POSTGRES_DB: smart_support
-  #     POSTGRES_USER: postgres
-  #     POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
-  #   ports:
-  #     - "5432:5432"
-  #   volumes:
-  #     - postgres-data:/var/lib/postgresql/data
-  #   networks:
-  #     - smart-support-network
-  #   restart: unless-stopped
+volumes:
+  embeddings-data:
+    driver: local
 
 networks:
   smart-support-network:
     driver: bridge
-
-# Volumes for persistent data
-volumes:
-  validation-data:
-  results-data:
-  # postgres-data:  # Uncomment if using PostgreSQL

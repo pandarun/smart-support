@@ -8,7 +8,6 @@ import apiClient, { API_TIMEOUTS } from './api';
 import type {
   ClassificationRequest,
   ClassificationResult,
-  ErrorResponse,
 } from '../types/classification';
 
 /**

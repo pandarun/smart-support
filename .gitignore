@@ -83,7 +83,6 @@ logs/
 
 # Docker
 docker-compose.override.yml
-.dockerignore
 
 # Chrome DevTools MCP
 screenshots/
