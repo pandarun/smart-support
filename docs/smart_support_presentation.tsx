@@ -50,8 +50,8 @@ const Presentation = () => {
     {
       title: "The Problem",
       content: (
-        <div className="p-12 bg-gradient-to-br from-red-50 to-orange-50 h-full">
-          <h2 className="text-5xl font-bold mb-12 text-red-800">The Challenge</h2>
+        <div className="p-4 pb-28 md:p-12 md:pb-12 bg-gradient-to-br from-red-50 to-orange-50 h-full overflow-y-auto">
+          <h2 className="text-3xl md:text-5xl font-bold mb-6 md:mb-12 text-red-800">The Challenge</h2>
           
           <div className="space-y-8">
             <div className="flex items-start space-x-6">
@@ -92,33 +92,33 @@ const Presentation = () => {
     {
       title: "Our Solution",
       content: (
-        <div className="p-12 bg-gradient-to-br from-green-50 to-blue-50 h-full">
-          <h2 className="text-5xl font-bold mb-12 text-green-800">Smart Support Solution</h2>
-          
-          <div className="grid grid-cols-2 gap-8">
+        <div className="p-4 pb-28 md:p-12 md:pb-12 bg-gradient-to-br from-green-50 to-blue-50 h-full overflow-y-auto">
+          <h2 className="text-3xl md:text-5xl font-bold mb-6 md:mb-12 text-green-800">Smart Support Solution</h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
             <div className="space-y-6">
               <div>
-                <div className="flex items-center space-x-4 mb-3">
-                  <Cpu className="w-8 h-8 text-blue-600" />
-                  <h3 className="text-2xl font-semibold">AI-Powered Classification</h3>
+                <div className="flex items-center space-x-3 mb-2">
+                  <Cpu className="w-6 h-6 md:w-8 md:h-8 text-blue-600 flex-shrink-0" />
+                  <h3 className="text-lg md:text-2xl font-semibold">AI-Powered Classification</h3>
                 </div>
-                <p className="text-lg text-gray-700">Automatic analysis and categorization of customer inquiries</p>
+                <p className="text-sm md:text-lg text-gray-700">Automatic analysis and categorization of customer inquiries</p>
               </div>
-              
+
               <div>
-                <div className="flex items-center space-x-4 mb-3">
-                  <Zap className="w-8 h-8 text-green-600" />
-                  <h3 className="text-2xl font-semibold">Intelligent Recommendations</h3>
+                <div className="flex items-center space-x-3 mb-2">
+                  <Zap className="w-6 h-6 md:w-8 md:h-8 text-green-600 flex-shrink-0" />
+                  <h3 className="text-lg md:text-2xl font-semibold">Intelligent Recommendations</h3>
                 </div>
-                <p className="text-lg text-gray-700">Semantic search finds the most relevant templates instantly</p>
+                <p className="text-sm md:text-lg text-gray-700">Semantic search finds the most relevant templates instantly</p>
               </div>
-              
+
               <div>
-                <div className="flex items-center space-x-4 mb-3">
-                  <Activity className="w-8 h-8 text-purple-600" />
-                  <h3 className="text-2xl font-semibold">Real-Time Interface</h3>
+                <div className="flex items-center space-x-3 mb-2">
+                  <Activity className="w-6 h-6 md:w-8 md:h-8 text-purple-600 flex-shrink-0" />
+                  <h3 className="text-lg md:text-2xl font-semibold">Real-Time Interface</h3>
                 </div>
-                <p className="text-lg text-gray-700">One-click template selection and response sending</p>
+                <p className="text-sm md:text-lg text-gray-700">One-click template selection and response sending</p>
               </div>
             </div>
             
@@ -142,10 +142,10 @@ const Presentation = () => {
     {
       title: "System Architecture",
       content: (
-        <div className="p-12 bg-gradient-to-br from-gray-50 to-blue-50 h-full">
-          <h2 className="text-5xl font-bold mb-12 text-gray-800">Three Core Modules</h2>
-          
-          <div className="grid grid-cols-3 gap-8">
+        <div className="p-4 pb-28 md:p-12 md:pb-12 bg-gradient-to-br from-gray-50 to-blue-50 h-full overflow-y-auto">
+          <h2 className="text-3xl md:text-5xl font-bold mb-6 md:mb-12 text-gray-800">Three Core Modules</h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
             <div className="bg-blue-600 text-white rounded-lg p-6 shadow-lg">
               <Cpu className="w-12 h-12 mb-4" />
               <h3 className="text-xl font-bold mb-3">Classification Module</h3>
@@ -382,10 +382,10 @@ const Presentation = () => {
     {
       title: "Results & Metrics",
       content: (
-        <div className="p-12 bg-gradient-to-br from-green-50 to-emerald-50 h-full">
-          <h2 className="text-5xl font-bold mb-12 text-green-800">Performance Metrics</h2>
-          
-          <div className="grid grid-cols-2 gap-8">
+        <div className="p-4 pb-28 md:p-12 md:pb-12 bg-gradient-to-br from-green-50 to-emerald-50 h-full overflow-y-auto">
+          <h2 className="text-3xl md:text-5xl font-bold mb-6 md:mb-12 text-green-800">Performance Metrics</h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
             <div className="space-y-6">
               <div className="bg-white rounded-lg shadow-lg p-6">
                 <div className="flex items-center justify-between">
@@ -448,10 +448,10 @@ const Presentation = () => {
     {
       title: "Business Impact",
       content: (
-        <div className="p-12 bg-gradient-to-br from-blue-50 to-indigo-50 h-full">
-          <h2 className="text-5xl font-bold mb-12 text-blue-800">Transform Your Support</h2>
-          
-          <div className="grid grid-cols-2 gap-8">
+        <div className="p-4 pb-28 md:p-12 md:pb-12 bg-gradient-to-br from-blue-50 to-indigo-50 h-full overflow-y-auto">
+          <h2 className="text-3xl md:text-5xl font-bold mb-6 md:mb-12 text-blue-800">Transform Your Support</h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
             <div className="bg-white rounded-lg shadow-lg p-8">
               <TrendingUp className="w-16 h-16 text-green-600 mb-4" />
               <h3 className="text-2xl font-bold mb-4">90%+ Time Savings</h3>
@@ -491,10 +491,10 @@ const Presentation = () => {
     {
       title: "Technical Stack",
       content: (
-        <div className="p-12 bg-gradient-to-br from-slate-900 to-slate-800 text-white h-full">
-          <h2 className="text-5xl font-bold mb-12">Production-Ready Stack</h2>
-          
-          <div className="grid grid-cols-2 gap-8">
+        <div className="p-4 pb-28 md:p-12 md:pb-12 bg-gradient-to-br from-slate-900 to-slate-800 text-white h-full overflow-y-auto">
+          <h2 className="text-3xl md:text-5xl font-bold mb-6 md:mb-12">Production-Ready Stack</h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
             <div>
               <h3 className="text-2xl font-bold mb-6 text-cyan-400">Backend</h3>
               <div className="bg-slate-700 rounded-lg p-6 space-y-3">
@@ -539,8 +539,8 @@ const Presentation = () => {
               </div>
             </div>
           </div>
-          
-          <div className="grid grid-cols-2 gap-8 mt-8">
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 mt-6 md:mt-8">
             <div>
               <h3 className="text-2xl font-bold mb-6 text-yellow-400">AI/ML</h3>
               <div className="bg-slate-700 rounded-lg p-6 space-y-3">
@@ -581,8 +581,8 @@ const Presentation = () => {
     {
       title: "What's Next",
       content: (
-        <div className="p-12 bg-gradient-to-br from-purple-50 to-pink-50 h-full">
-          <h2 className="text-5xl font-bold mb-12 text-purple-800">Future Enhancements</h2>
+        <div className="p-4 pb-28 md:p-12 md:pb-12 bg-gradient-to-br from-purple-50 to-pink-50 h-full overflow-y-auto">
+          <h2 className="text-3xl md:text-5xl font-bold mb-6 md:mb-12 text-purple-800">Future Enhancements</h2>
           
           <div className="space-y-6">
             <div className="bg-white rounded-lg shadow-lg p-6 flex items-start space-x-4">
