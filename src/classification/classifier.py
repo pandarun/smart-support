@@ -103,6 +103,11 @@ class Classifier:
             try:
                 response_data = json.loads(response_text)
             except json.JSONDecodeError as e:
+                # Log the raw response for debugging
+                print(f"[DEBUG] RAW LLM RESPONSE: {response_text}", flush=True)
+                self.logger.error(
+                    f"Failed to parse LLM response as JSON. Raw response: {response_text[:500]}"
+                )
                 log_error(
                     "Failed to parse LLM response as JSON",
                     "api_error",
