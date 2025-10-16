@@ -24,12 +24,12 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
 
 /**
  * Request timeout values aligned with API performance requirements
- * - Classification: 15000ms (increased to accommodate LLM API response times)
+ * - Classification: 30000ms (increased to accommodate expanded prompt with all examples)
  * - Retrieval: 2000ms (FR-010 requires <1s, add 1s buffer)
  * - Default: 5000ms for health checks and other endpoints
  */
 export const API_TIMEOUTS = {
-  CLASSIFICATION: 15000,
+  CLASSIFICATION: 30000,
   RETRIEVAL: 2000,
   DEFAULT: 5000,
 } as const;
