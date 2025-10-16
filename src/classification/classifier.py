@@ -29,6 +29,39 @@ class ClassificationError(Exception):
     pass
 
 
+def strip_markdown_code_blocks(text: str) -> str:
+    """
+    Strip markdown code block markers from text.
+
+    Handles cases where LLM returns JSON wrapped in ```json ... ``` or ``` ... ```
+
+    Args:
+        text: Raw text that may contain markdown code blocks
+
+    Returns:
+        Text with code block markers removed
+
+    Examples:
+        >>> strip_markdown_code_blocks('```json\\n{"key": "value"}\\n```')
+        '{"key": "value"}'
+        >>> strip_markdown_code_blocks('{"key": "value"}')
+        '{"key": "value"}'
+    """
+    text = text.strip()
+
+    # Remove opening code block marker (case-insensitive for language specifier)
+    if text.lower().startswith("```json"):
+        text = text[7:]  # Remove ```json or ```JSON
+    elif text.startswith("```"):
+        text = text[3:]  # Remove ```
+
+    # Remove closing code block marker
+    if text.endswith("```"):
+        text = text[:-3]
+
+    return text.strip()
+
+
 class Classifier:
     """
     Main classifier for customer inquiries.
@@ -101,7 +134,9 @@ class Classifier:
             # Step 4: Parse JSON response
             response_text = completion.choices[0].message.content
             try:
-                response_data = json.loads(response_text)
+                # Strip markdown code block markers if present
+                cleaned_text = strip_markdown_code_blocks(response_text)
+                response_data = json.loads(cleaned_text)
             except json.JSONDecodeError as e:
                 # Log the raw response for debugging
                 print(f"[DEBUG] RAW LLM RESPONSE: {response_text}", flush=True)
@@ -141,8 +176,8 @@ class Classifier:
                 subcategory = self.faq_parser.get_subcategories(category)[0]
                 confidence = max(0.4, confidence * 0.7)  # Reduce confidence slightly
             
-            # Step 7: Calculate processing time
-            processing_time_ms = int((time.time() - start_time) * 1000)
+            # Step 7: Calculate processing time (ensure at least 1ms for validation)
+            processing_time_ms = max(1, int((time.time() - start_time) * 1000))
             
             # Step 8: Create result
             result = ClassificationResult(
