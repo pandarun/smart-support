@@ -90,12 +90,6 @@ def sanitize_inquiry(text: str) -> str:
     # Remove control characters except newlines and tabs
     text = re.sub(r'[\x00-\x08\x0b-\x0c\x0e-\x1f\x7f]', '', text)
 
-    # Ensure proper punctuation at the end
-    # If the text doesn't end with punctuation, add a question mark
-    # This ensures consistent LLM responses for classification
-    if text and not text[-1] in '.?!':
-        text += '?'
-
     return text
 
 
