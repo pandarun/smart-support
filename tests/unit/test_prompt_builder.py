@@ -36,16 +36,16 @@ def test_prompt_builder_initialization(prompt_builder):
 def test_system_prompt_structure(prompt_builder):
     """Test system prompt has correct structure."""
     system_prompt = prompt_builder.get_system_prompt()
-    
+
     # Verify key sections present
     assert "эксперт по банковским продуктам" in system_prompt
     assert "JSON" in system_prompt
     assert "category" in system_prompt
     assert "subcategory" in system_prompt
     assert "confidence" in system_prompt
-    
-    # Verify few-shot examples are included
-    assert "Как открыть счет" in system_prompt
+
+    # Verify few-shot examples are included (using an example from expanded prompt)
+    assert "Запрос:" in system_prompt  # Example format indicator
 
 
 @pytest.mark.unit
@@ -121,11 +121,12 @@ def test_prompt_includes_instructions(prompt_builder):
 def test_category_format_for_prompt(prompt_builder, sample_categories):
     """Test category formatting utility."""
     formatted = prompt_builder._format_categories()
-    
+
     # Should contain all categories
     for category in sample_categories.keys():
         assert category in formatted
-    
-    # Should be hierarchical
-    assert ":" in formatted
+
+    # Should be hierarchical (updated for new format without colons)
     assert "-" in formatted or "•" in formatted or " " in formatted
+    # Verify subcategories are indented
+    assert "  -" in formatted or "    " in formatted
